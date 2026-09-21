@@ -1,0 +1,914 @@
+/* =========================================================
+   WEAKTOPEAK — HERO
+========================================================= */
+.hero-page {
+  --hero-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --hero-ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --hero-duration: 0.45s;
+  --hero-fast: 0.3s;
+}
+
+.hero-page {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #000000;
+  color: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+
+  padding: 40px 24px;
+  box-sizing: border-box;
+
+  isolation: isolate;
+}
+
+
+/* =========================================================
+   BACKGROUND GLOW
+========================================================= */
+
+.hero-page::before {
+  content: "";
+
+  position: absolute;
+
+  width: 680px;
+  height: 680px;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -55%);
+
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.055) 0%,
+    rgba(255, 255, 255, 0.018) 35%,
+    transparent 70%
+  );
+
+  pointer-events: none;
+  z-index: -1;
+
+  animation: heroGlow 7s ease-in-out infinite;
+}
+
+
+/* Very subtle upper ambient light */
+
+.hero-page::after {
+  content: "";
+
+  position: absolute;
+
+  width: 420px;
+  height: 180px;
+
+  top: -100px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: radial-gradient(
+    ellipse,
+    rgba(255, 255, 255, 0.035),
+    transparent 70%
+  );
+
+  pointer-events: none;
+  z-index: -1;
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.hero-page .hero-content {
+  width: 100%;
+  max-width: 760px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   BADGE
+========================================================= */
+
+.hero-page .hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 7px 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  color: #a9a9a9;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  margin-bottom: 28px;
+
+  cursor: default;
+
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+
+  animation: heroFadeUp 0.7s ease both;
+}
+
+.hero-page .hero-badge:hover {
+  color: #eeeeee;
+
+  border-color: rgba(255, 255, 255, 0.22);
+
+  background: rgba(255, 255, 255, 0.055);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(255, 255, 255, 0.025);
+}
+
+
+/* Badge dot */
+
+.hero-page .hero-badge-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 6px rgba(255, 255, 255, 0.7);
+
+  animation: badgePulse 2.5s ease-in-out infinite;
+}
+
+
+/* =========================================================
+   HERO TITLE
+========================================================= */
+
+.hero-page .hero-title {
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 2px;
+
+  font-size: clamp(38px, 5vw, 62px);
+  line-height: 1.08;
+
+  font-weight: 600;
+
+  letter-spacing: -2.2px;
+
+  color: #ffffff;
+
+  animation: heroFadeUp 0.7s ease 0.08s both;
+}
+
+
+/* Each line */
+
+.hero-page .title-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.24em;
+}
+
+
+/* Second line */
+
+.hero-page .title-muted {
+  color: #858585;
+}
+
+
+/* =========================================================
+   TITLE WORDS
+========================================================= */
+
+.hero-page .title-word {
+  display: inline-block;
+
+  position: relative;
+
+  color: inherit;
+
+  cursor: default;
+
+  transform: translateY(0);
+
+  transition:
+    color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    text-shadow 0.28s ease,
+    opacity 0.28s ease;
+}
+
+
+/* Word hover */
+
+.hero-page .title-word:hover {
+  color: #ffffff;
+
+  transform: translateY(-4px);
+
+  text-shadow:
+    0 0 18px rgba(255, 255, 255, 0.12),
+    0 0 35px rgba(255, 255, 255, 0.04);
+}
+
+
+/* Focus effect */
+
+.hero-page .hero-title:has(.title-word:hover) .title-word {
+  opacity: 0.38;
+}
+
+.hero-page .hero-title:has(.title-word:hover) .title-word:hover {
+  opacity: 1;
+}
+
+
+/* Tiny underline */
+ 
+
+.hero-page .title-word:hover::after {
+  right: 0;
+  opacity: 0.65;
+}
+
+
+/* =========================================================
+   TITLE WORD STAGGER
+========================================================= */
+
+.hero-page .title-word:nth-child(1) {
+  transition-delay: 0ms;
+}
+
+.hero-page .title-word:nth-child(2) {
+  transition-delay: 8ms;
+}
+
+.hero-page .title-word:nth-child(3) {
+  transition-delay: 16ms;
+}
+
+.hero-page .title-word:nth-child(4) {
+  transition-delay: 24ms;
+}
+
+.hero-page .title-word:nth-child(5) {
+  transition-delay: 32ms;
+}
+
+
+/* =========================================================
+   SUBTITLE
+========================================================= */
+
+.hero-page .hero-subtitle {
+  margin: 22px 0 0;
+
+  color: #777777;
+
+  font-size: 15px;
+  line-height: 1.7;
+
+  font-weight: 400;
+
+  position: relative;
+
+  cursor: default;
+
+  transition:
+    color 0.35s ease,
+    transform 0.35s ease,
+    text-shadow 0.35s ease;
+
+  animation: heroFadeUp 0.7s ease 0.16s both;
+}
+
+
+.hero-page .hero-subtitle:hover {
+  color: #a9a9a9;
+
+  transform: translateY(-1px);
+
+  text-shadow:
+    0 0 18px rgba(255, 255, 255, 0.07);
+}
+
+
+/* =========================================================
+   SUBTITLE HIGHLIGHTS
+========================================================= */
+
+.hero-page .subtitle-highlight {
+  color: #a5a5a5;
+
+  position: relative;
+
+  transition:
+    color 0.25s ease,
+    text-shadow 0.25s ease;
+}
+
+.hero-page .subtitle-highlight:hover {
+  color: #ffffff;
+
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.18);
+}
+
+
+.hero-page .subtitle-highlight::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 100%;
+
+  bottom: -2px;
+
+  height: 1px;
+
+  background: #ffffff;
+
+  transition: right 0.3s ease;
+}
+
+.hero-page .subtitle-highlight:hover::after {
+  right: 0;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.hero-page .hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  margin-top: 40px;
+
+  animation: heroFadeUp 0.7s ease 0.24s both;
+}
+
+
+/* =========================================================
+   BASE BUTTON
+========================================================= */
+
+.hero-page .hero-action {
+  position: relative;
+
+  height: 46px;
+  min-width: 175px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  padding: 0 18px;
+
+  border-radius: 9px;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  overflow: hidden;
+
+  isolation: isolate;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* =========================================================
+   BUTTON PERIMETER HIGHLIGHT
+========================================================= */
+
+.hero-page .hero-action::before {
+  content: "";
+
+  position: absolute;
+
+  width: 42px;
+  height: 2px;
+
+  left: -42px;
+  top: -1px;
+
+  background: #ffffff;
+
+  border-radius: 50%;
+
+  opacity: 0;
+
+  box-shadow:
+    0 0 5px rgba(255, 255, 255, 0.9),
+    0 0 10px rgba(255, 255, 255, 0.35);
+
+  z-index: 3;
+
+  pointer-events: none;
+}
+
+
+/* Activate perimeter */
+
+.hero-page .hero-action:hover::before {
+  opacity: 1;
+
+  animation:
+    heroBorderRun 1.7s linear infinite;
+}
+
+
+/* =========================================================
+   START ASSESSMENT
+========================================================= */
+
+.hero-page .hero-action.primary {
+  background: #ffffff;
+
+  color: #111111;
+
+  border: 1px solid #ffffff;
+}
+
+
+/* =========================================================
+   ABOUT
+========================================================= */
+
+.hero-page .hero-action.secondary {
+  background: #050505;
+
+  color: #d0d0d0;
+
+  border: 1px solid #303030;
+}
+
+
+/* =========================================================
+   BUTTON HOVER
+========================================================= */
+
+.hero-page .hero-action.primary:hover {
+  background: #f4f4f4;
+
+  color: #000000;
+
+  border-color: #444444;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(255, 255, 255, 0.08);
+}
+
+
+.hero-page .hero-action.secondary:hover {
+  background: #000000;
+
+  color: #ffffff;
+
+  border-color: #4a4a4a;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(255, 255, 255, 0.05);
+}
+
+
+/* =========================================================
+   BUTTON PRESS
+========================================================= */
+
+.hero-page .hero-action:active {
+  transform: translateY(0) scale(0.98);
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.hero-page .action-icon {
+  width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  transition:
+    color 0.2s ease,
+    transform 0.25s ease;
+}
+
+
+.hero-page .hero-action.primary .action-icon {
+  color: #111111;
+}
+
+
+.hero-page .hero-action.secondary .action-icon {
+  color: #999999;
+}
+
+
+.hero-page .hero-action:hover .action-icon {
+  transform: translateX(2px);
+}
+
+
+/* About icon */
+
+.hero-page .about-icon {
+  width: 16px;
+  height: 16px;
+
+  border: 1px solid currentColor;
+
+  border-radius: 50%;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   ARROW
+========================================================= */
+
+.hero-page .action-arrow {
+  font-size: 15px;
+
+  transition:
+    color 0.2s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.hero-page .hero-action.primary .action-arrow {
+  color: #555555;
+}
+
+
+.hero-page .hero-action.secondary .action-arrow {
+  color: #777777;
+}
+
+
+.hero-page .hero-action:hover .action-arrow {
+  color: currentColor;
+
+  transform: translateX(4px);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.hero-page .hero-footer {
+  position: absolute;
+
+  bottom: 28px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  color: #444444;
+
+  font-size: 11px;
+  font-weight: 400;
+
+  letter-spacing: 0.3px;
+
+  user-select: none;
+
+  animation: heroFadeUp 0.7s ease 0.4s both;
+}
+
+
+/* Footer words */
+
+.hero-page .footer-item {
+  position: relative;
+
+  color: #777777;
+
+  cursor: default;
+
+  transition:
+    color 0.25s ease,
+    text-shadow 0.25s ease,
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+
+/* Underline */
+
+.hero-page .footer-item::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 100%;
+
+  bottom: -4px;
+
+  height: 1px;
+
+  background: #ffffff;
+
+  transition:
+    right 0.3s ease,
+    opacity 0.3s ease;
+
+  opacity: 0;
+}
+
+
+.hero-page .footer-item:hover {
+  color: #ffffff;
+
+  transform: translateY(-1px);
+
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.15);
+}
+
+
+.hero-page .footer-item:hover::after {
+  right: 0;
+
+  opacity: 0.7;
+}
+
+
+/* Dim other footer words */
+
+.hero-page .hero-footer:has(.footer-item:hover) .footer-item {
+  opacity: 0.35;
+}
+
+
+.hero-page .hero-footer .footer-item:hover {
+  opacity: 1;
+}
+
+
+/* Footer dots */
+
+.hero-page .footer-dot {
+  color: #292929;
+
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+
+.hero-page .hero-footer:hover .footer-dot {
+  color: #555555;
+}
+
+
+/* =========================================================
+   ENTRANCE ANIMATION
+========================================================= */
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   BACKGROUND ANIMATION
+========================================================= */
+
+@keyframes heroGlow {
+  0%,
+  100% {
+    opacity: 0.55;
+
+    transform:
+      translate(-50%, -55%)
+      scale(0.96);
+  }
+
+  50% {
+    opacity: 0.9;
+
+    transform:
+      translate(-50%, -55%)
+      scale(1.04);
+  }
+}
+
+
+/* =========================================================
+   BADGE PULSE
+========================================================= */
+
+@keyframes badgePulse {
+  0%,
+  100% {
+    opacity: 0.55;
+
+    box-shadow:
+      0 0 4px rgba(255, 255, 255, 0.35);
+  }
+
+  50% {
+    opacity: 1;
+
+    box-shadow:
+      0 0 8px rgba(255, 255, 255, 0.75);
+  }
+}
+
+
+/* =========================================================
+   BUTTON BORDER ANIMATION
+========================================================= */
+
+@keyframes heroBorderRun {
+  0% {
+    left: -42px;
+    top: -1px;
+  }
+
+  25% {
+    left: calc(100% - 2px);
+    top: -1px;
+  }
+
+  50% {
+    left: calc(100% - 2px);
+    top: calc(100% - 2px);
+  }
+
+  75% {
+    left: -2px;
+    top: calc(100% - 2px);
+  }
+
+  100% {
+    left: -42px;
+    top: -1px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .hero-page {
+    padding: 30px 18px 70px;
+  }
+
+
+  .hero-page .hero-title {
+    font-size: 38px;
+
+    letter-spacing: -1.5px;
+  }
+
+
+  .hero-page .hero-subtitle {
+    font-size: 14px;
+  }
+
+
+  .hero-page .hero-subtitle br {
+    display: none;
+  }
+
+
+  .hero-page .hero-actions {
+    width: 100%;
+
+    gap: 8px;
+
+    margin-top: 34px;
+  }
+
+
+  .hero-page .hero-action {
+    min-width: 0;
+
+    flex: 1;
+
+    height: 46px;
+
+    padding: 0 10px;
+  }
+
+
+  .hero-page .hero-action strong {
+    font-size: 12px;
+  }
+
+
+  .hero-page .hero-footer {
+    bottom: 22px;
+  }
+
+
+  .hero-page::before {
+    width: 480px;
+    height: 480px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .hero-page *,
+  .hero-page::before,
+  .hero-page::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+  }
+}

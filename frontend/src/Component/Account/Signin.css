@@ -1,0 +1,309 @@
+.signin-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 20px;
+  background: #f7f8fa;
+}
+
+.signin-card {
+  width: min(430px, 100%);
+  padding: 40px;
+  background: #ffffff;
+  border: 1px solid #e3e5e8;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Brand */
+
+.signin-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 38px;
+}
+
+.signin-brand-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #202124;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.signin-brand-name {
+  color: #202124;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+/* Heading */
+
+.signin-heading {
+  margin-bottom: 28px;
+}
+
+.signin-heading h1 {
+  margin: 0 0 8px;
+  color: #202124;
+  font-size: 27px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.signin-heading p {
+  margin: 0;
+  color: #6b7077;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Field */
+
+.signin-field {
+  margin-bottom: 18px;
+}
+
+.signin-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #3c4043;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.signin-field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 13px;
+  border: 1px solid #cfd3d8;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #202124;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.signin-field input::placeholder {
+  color: #9aa0a6;
+}
+
+.signin-field input:focus {
+  border-color: #5f6368;
+  box-shadow: 0 0 0 3px rgba(95, 99, 104, 0.1);
+}
+
+/* Password */
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 65px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  color: #3730a3;
+}
+
+/* Back */
+
+.signin-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 100%;
+  margin-bottom: 22px;
+  padding: 7px 10px;
+  border: 1px solid #e1e4e7;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #4b5056;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.signin-back span:last-child {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signin-back:hover {
+  background: #f6f7f8;
+}
+
+/* Error */
+
+.signin-error {
+  margin: -5px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #f1caca;
+  border-radius: 7px;
+  background: #fff5f5;
+  color: #b42318;
+  font-size: 12px;
+}
+
+/* Helper */
+
+.signin-helper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 8px 0 25px;
+  color: #777d84;
+  font-size: 12px;
+}
+
+.signin-helper a {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signin-helper a:hover {
+  text-decoration: underline;
+}
+
+/* Forgot */
+
+.forgot-password {
+  margin: -2px 0 24px;
+}
+
+.forgot-password button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.forgot-password button:hover {
+  text-decoration: underline;
+}
+
+/* Actions */
+
+.signin-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.signin-next-action {
+  justify-content: flex-end;
+}
+
+.signin-primary-button,
+.signin-secondary-button {
+  min-width: 105px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 17px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.signin-primary-button {
+  border: 1px solid #202124;
+  background: #202124;
+  color: #ffffff;
+}
+
+.signin-primary-button:hover {
+  background: #303134;
+}
+
+.signin-secondary-button {
+  border: 1px solid #d9dce0;
+  background: #ffffff;
+  color: #3c4043;
+}
+
+.signin-secondary-button:hover {
+  background: #f6f7f8;
+}
+
+.password-actions {
+  margin-top: 30px;
+}
+
+/* Footer */
+
+.signin-footer {
+  margin: 30px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid #edf0f2;
+  color: #8a8f96;
+  font-size: 10px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Mobile */
+
+@media (max-width: 520px) {
+  .signin-page {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 45px;
+  }
+
+  .signin-card {
+    padding: 28px 22px;
+    border-radius: 13px;
+  }
+
+  .signin-brand {
+    margin-bottom: 32px;
+  }
+
+  .signin-heading h1 {
+    font-size: 24px;
+  }
+
+  .signin-actions {
+    gap: 8px;
+  }
+
+  .signin-primary-button,
+  .signin-secondary-button {
+    flex: 1;
+  }
+}

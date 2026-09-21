@@ -1,0 +1,539 @@
+ /* =====================================
+   APP LAYOUT
+===================================== */
+
+ .app-layout {
+   min-height: 100vh;
+   background: #f7f8fa;
+ }
+
+ .main-content {
+   min-height: 100vh;
+   margin-left: 72px;
+   box-sizing: border-box;
+
+   transition: margin-left 0.2s ease;
+ }
+
+ .page-content {
+   width: 100%;
+   min-height: 100vh;
+   box-sizing: border-box;
+
+   padding: 48px 40px;
+ }
+
+
+ /* =====================================
+   SIDEBAR
+===================================== */
+
+ .sidebar {
+   position: fixed;
+
+   top: 0;
+   left: 0;
+
+   width: 72px;
+   height: 100vh;
+
+   box-sizing: border-box;
+
+   display: flex;
+   flex-direction: column;
+
+   padding: 14px 10px;
+
+   background: #ffffff;
+
+   border-right: 1px solid #e7e9ec;
+
+   z-index: 1000;
+
+   transition:
+     width 0.2s ease,
+     padding 0.2s ease;
+ }
+
+
+ /* =====================================
+   EXPANDED
+===================================== */
+
+ .sidebar-expanded {
+   width: 250px;
+ }
+
+ .sidebar-expanded+.main-content {
+   margin-left: 250px;
+ }
+
+
+ /* =====================================
+   HEADER
+===================================== */
+
+ .sidebar-header {
+   display: flex;
+   align-items: center;
+
+   min-height: 42px;
+
+   margin-bottom: 24px;
+
+   gap: 10px;
+ }
+
+
+ /* Logo */
+
+ .brand-mark {
+   width: 38px;
+   height: 38px;
+
+   flex-shrink: 0;
+
+   display: flex;
+   align-items: center;
+   justify-content: center;
+
+   border-radius: 10px;
+
+   background: #17191c;
+   color: #ffffff;
+
+   font-size: 17px;
+   font-weight: 700;
+ }
+
+
+ /* Brand text */
+
+ .brand-text {
+   min-width: 0;
+
+   display: flex;
+   flex-direction: column;
+
+   white-space: nowrap;
+ }
+
+ .brand-name {
+   color: #17191c;
+
+   font-size: 16px;
+   font-weight: 700;
+
+   letter-spacing: -0.01em;
+ }
+
+ .brand-subtitle {
+   margin-top: 3px;
+
+   color: #92979e;
+
+   font-size: 10px;
+   font-weight: 500;
+ }
+
+
+ /* =====================================
+   TOGGLE BUTTON
+===================================== */
+
+ /* .sidebar-toggle {
+  width: 32px;
+  height: 32px;
+
+  margin-left: auto;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e1e3e6;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #6c7178;
+
+  font-size: 16px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #f5f6f7;
+  border-color: #d5d7da;
+  color: #17191c;
+} */
+
+ .sidebar-header {
+   display: flex;
+   align-items: center;
+   padding: 16px;
+   width: 100%;
+   box-sizing: border-box;
+ }
+
+ /* W logo container */
+ .brand-logo-wrapper {
+   position: relative;
+   width: 36px;
+   height: 36px;
+   min-width: 36px;
+ }
+
+ /* Toggle button */
+ .sidebar-toggle {
+   position: absolute !important;
+
+   top: 0 !important;
+   left: 0 !important;
+
+   width: 36px !important;
+   height: 36px !important;
+
+   margin: 0 !important;
+   padding: 0 !important;
+
+   display: flex;
+   align-items: center;
+   justify-content: center;
+
+   border: none;
+   border-radius: 10px;
+
+   background: #ffffff;
+   color: #000000;
+
+   cursor: pointer;
+
+   z-index: 2;
+
+   opacity: 0;
+
+   transition: opacity 0.15s ease;
+ }
+
+ /* =========================
+   COLLAPSED SIDEBAR
+   ========================= */
+
+ /* Hover W → show arrow */
+ .brand-logo-wrapper:hover .brand-mark {
+   opacity: 0;
+ }
+
+ .brand-logo-wrapper:hover .sidebar-toggle {
+   opacity: 1;
+ }
+
+ /* =========================
+   EXPANDED SIDEBAR
+   ========================= */
+
+ /* Move arrow to right side */
+ .sidebar-header:has(.brand-text) .sidebar-toggle {
+   position: absolute !important;
+
+   left: 180px !important;
+   right: auto !important;
+
+   opacity: 1;
+ }
+
+ /* Don't hide W when expanded */
+ .sidebar-header:has(.brand-text) .brand-mark {
+   opacity: 1;
+ }
+
+ .sidebar-toggle {
+   border: 1px solid #000000;
+ }
+
+ /* =====================================
+   NAVIGATION
+===================================== */
+
+ .sidebar-navigation {
+   display: flex;
+   flex-direction: column;
+
+   gap: 28px;
+ }
+
+ .sidebar-section {
+   display: flex;
+   flex-direction: column;
+
+   gap: 4px;
+ }
+
+ .sidebar-section-title {
+   margin: 0 0 8px;
+
+   padding-left: 10px;
+
+   color: #a0a5ac;
+
+   font-size: 10px;
+   font-weight: 700;
+
+   letter-spacing: 0.1em;
+ }
+
+
+ /* =====================================
+   NAV LINKS
+===================================== */
+
+ .sidebar-link {
+   position: relative;
+
+   width: 100%;
+   min-height: 42px;
+
+   box-sizing: border-box;
+
+   display: flex;
+   align-items: center;
+
+   gap: 12px;
+
+   padding: 0 10px;
+
+   border-radius: 9px;
+
+   color: #646a72;
+
+   text-decoration: none;
+
+   font-size: 13px;
+   font-weight: 500;
+
+   transition:
+     background 0.18s ease,
+     color 0.18s ease;
+ }
+
+ .sidebar-link:hover {
+   background: #f5f6f7;
+   color: #22262b;
+ }
+
+
+ /* Collapsed links */
+
+ .sidebar-collapsed .sidebar-link {
+   justify-content: center;
+   padding: 0;
+ }
+
+
+ /* =====================================
+   ICON
+===================================== */
+
+ .sidebar-link-icon {
+   width: 24px;
+   height: 24px;
+
+   flex-shrink: 0;
+
+   display: flex;
+   align-items: center;
+   justify-content: center;
+
+   font-size: 17px;
+   font-weight: 500;
+ }
+
+
+ /* =====================================
+   ACTIVE
+===================================== */
+
+ .sidebar-link.active {
+   background: #17191c;
+   color: #ffffff;
+ }
+
+ .sidebar-link.active:hover {
+   background: #17191c;
+   color: #ffffff;
+ }
+
+ .sidebar-link.active::before {
+   content: "";
+
+   position: absolute;
+
+   left: 0;
+
+   width: 3px;
+   height: 22px;
+
+   border-radius: 0 3px 3px 0;
+
+   background: #ffffff;
+ }
+
+
+ /* =====================================
+   FOOTER
+===================================== */
+
+ .sidebar-footer {
+   margin-top: auto;
+
+   padding: 0 10px 6px;
+ }
+
+ .footer-line {
+   width: 100%;
+   height: 1px;
+
+   margin-bottom: 15px;
+
+   background: #eeeeee;
+ }
+
+ .sidebar-footer p {
+   margin: 0;
+
+   color: #a0a5ac;
+
+   font-size: 10px;
+   line-height: 1.6;
+ }
+
+
+
+
+
+
+ /* =====================================
+   TABLET
+===================================== */
+
+ @media (max-width: 900px) {
+
+   .sidebar-expanded {
+     width: 220px;
+   }
+
+   .sidebar-expanded+.main-content {
+     margin-left: 220px;
+   }
+
+   .page-content {
+     padding: 35px 25px;
+   }
+ }
+
+
+ /* =====================================
+   MOBILE
+===================================== */
+
+ @media (max-width: 700px) {
+
+   .sidebar {
+     position: fixed;
+
+     top: auto;
+     bottom: 0;
+     left: 0;
+
+     width: 100% !important;
+     height: 64px;
+
+     flex-direction: row;
+
+     padding: 7px 12px;
+
+     border-right: none;
+     border-top: 1px solid #e7e9ec;
+   }
+
+   .sidebar-header {
+     display: none;
+   }
+
+   .sidebar-navigation {
+     width: 100%;
+
+     display: flex;
+     flex-direction: row;
+
+     justify-content: space-around;
+
+     gap: 4px;
+   }
+
+   .sidebar-section {
+     width: 100%;
+
+     flex-direction: row;
+
+     justify-content: space-around;
+
+     gap: 4px;
+   }
+
+   .sidebar-section-title {
+     display: none;
+   }
+
+   .sidebar-link {
+     flex: 1;
+
+     min-height: 50px;
+
+     flex-direction: column;
+
+     justify-content: center;
+
+     gap: 4px;
+
+     padding: 4px;
+
+     border-radius: 8px;
+
+     font-size: 9px;
+   }
+
+   .sidebar-link-icon {
+     width: auto;
+     height: auto;
+
+     font-size: 17px;
+   }
+
+   .sidebar-link.active::before {
+     display: none;
+   }
+
+   .sidebar-footer {
+     display: none;
+   }
+
+   .main-content,
+   .sidebar-expanded+.main-content {
+     margin-left: 0;
+
+     padding-bottom: 64px;
+   }
+
+   .page-content {
+     padding: 25px 15px;
+   }
+ }

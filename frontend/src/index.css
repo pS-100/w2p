@@ -1,0 +1,21 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+.signup {
+    display: flex;
+    justify-content: end;
+}
+
+.sideBar {
+    justify-content: end;
+    border: 1px solid black;
+    border-radius: 5px;
+
+    /* width: 120px; */
+}
+
+.questionForm{
+    border: 1px solid black;
+    border-radius: 5px;
+}

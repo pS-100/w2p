@@ -1,0 +1,289 @@
+/* ================================
+   Question Card
+================================ */
+
+.question-card {
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+
+/* ================================
+   Header
+================================ */
+
+.question-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 24px;
+
+  background: #fafafa;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.question-number {
+  color: #17191c;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.question-difficulty {
+  padding: 5px 10px;
+
+  border: 1px solid #dedfe2;
+  border-radius: 999px;
+
+  background: #ffffff;
+  color: #6b7078;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: capitalize;
+}
+
+
+/* ================================
+   Question
+================================ */
+
+.question-content {
+  padding: 34px 30px 28px;
+}
+
+.question-text {
+  margin: 0;
+
+  color: #17191c;
+
+  font-size: 23px;
+  line-height: 1.5;
+  font-weight: 650;
+
+  letter-spacing: -0.02em;
+}
+
+
+/* ================================
+   Options
+================================ */
+
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  padding: 0 30px 28px;
+}
+
+.question-option {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 42px 1fr 24px;
+  align-items: center;
+
+  min-height: 62px;
+
+  padding: 8px 14px 8px 10px;
+
+  border: 1px solid #dedfe2;
+  border-radius: 11px;
+
+  background: #ffffff;
+  color: #292d32;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.question-option:hover {
+  border-color: #b8bbc0;
+  background: #fafafa;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 3px 10px rgba(15, 23, 42, 0.04);
+}
+
+
+/* ================================
+   Option Letter
+================================ */
+
+.option-letter {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #dfe1e4;
+  border-radius: 8px;
+
+  background: #f7f7f8;
+  color: #5f646b;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.option-text {
+  padding: 0 12px;
+
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+
+/* ================================
+   Selected Option
+================================ */
+
+.question-option.selected {
+  border-color: #17191c;
+  background: #f7f7f7;
+
+  box-shadow:
+    0 0 0 1px #17191c;
+}
+
+.question-option.selected .option-letter {
+  border-color: #17191c;
+  background: #17191c;
+  color: #ffffff;
+}
+
+.question-option.selected .option-text {
+  color: #17191c;
+  font-weight: 600;
+}
+
+.option-check {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #17191c;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+
+/* ================================
+   Footer
+================================ */
+
+.question-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 15px 30px;
+
+  border-top: 1px solid #eeeeee;
+
+  background: #fcfcfc;
+
+  color: #969aa1;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.answer-selected {
+  color: #555b63;
+  font-weight: 600;
+}
+
+
+/* ================================
+   Focus / Accessibility
+================================ */
+
+.question-option:focus-visible {
+  outline: 3px solid rgba(23, 25, 28, 0.15);
+  outline-offset: 2px;
+}
+
+
+/* ================================
+   Mobile
+================================ */
+
+@media (max-width: 700px) {
+  .question-card {
+    border-radius: 13px;
+  }
+
+  .question-card-header {
+    padding: 15px 17px;
+  }
+
+  .question-content {
+    padding: 25px 18px 22px;
+  }
+
+  .question-text {
+    font-size: 19px;
+    line-height: 1.45;
+  }
+
+  .question-options {
+    gap: 10px;
+    padding: 0 18px 22px;
+  }
+
+  .question-option {
+    grid-template-columns: 38px 1fr 20px;
+
+    min-height: 58px;
+
+    padding-right: 10px;
+  }
+
+  .option-letter {
+    width: 31px;
+    height: 31px;
+  }
+
+  .option-text {
+    padding: 0 8px;
+
+    font-size: 13px;
+  }
+
+  .question-card-footer {
+    padding: 13px 18px;
+  }
+}
