@@ -16,6 +16,16 @@ const dotenv = require("dotenv");
 
 const connectDB = require("./config/db");
 const questionRoutes = require("./routes/questionRoutes");
+const attemptRoutes = require("./routes/attemptRoutes");
+const performanceRoutes =
+  require("./routes/performanceRoutes");
+
+const adaptiveRetestRoutes =
+  require(
+    "./routes/adaptiveRetestRoutes"
+  );
+
+const authRoutes = require("./routes/authRoutes");
 
 
 dotenv.config();
@@ -46,6 +56,23 @@ app.use(
   "/api/questions",
   questionRoutes
 );
+
+app.use(
+  "/api/attempts",
+  attemptRoutes
+);
+
+app.use(
+  "/api/performance",
+  performanceRoutes
+);
+
+app.use(
+  "/api/adaptive-retest",
+  adaptiveRetestRoutes
+);
+
+app.use("/api/auth", authRoutes);
 
 // --------------------------------
 // Health check

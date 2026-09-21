@@ -46,12 +46,31 @@ const questionSchema = new mongoose.Schema(
     explanation: {
       type: String,
       required: true
-    }
+    },
+
+    // NEW
+    generationType: {
+      type: String,
+      enum: [
+        "standard",
+        "adaptive-retest",
+      ],
+      default: "standard",
+    },
+
+    // NEW
+    parentAttemptId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Attempt",
+      default: null,
+    },
+
   },
+
   {
     timestamps: true
   }
 );
-const Question = mongoose.model("Question", questionSchema);
+// const Question = mongoose.model("Question", questionSchema);
 
 module.exports = mongoose.model("Question", questionSchema);

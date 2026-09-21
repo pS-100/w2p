@@ -1,4 +1,4 @@
-import * as z from "zod";
+const z = require("zod");
 
 const questionJsonSchema = {
   type: "object",
@@ -68,7 +68,7 @@ const validateQuestions = (data) => {
   return questionZodSchema.parse(data);
 };
 
-export {
+module.exports = {
   questionJsonSchema,
-  validateQuestions
+  validateQuestions,
 };
