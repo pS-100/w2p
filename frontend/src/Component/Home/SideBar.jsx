@@ -80,7 +80,7 @@ export default function SideBar() {
             {!collapsed && <span className="sidebar-link-text">New Test</span>}
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             to="/performance"
             title={collapsed ? "Performance" : undefined}
             className={({ isActive }) =>
@@ -92,9 +92,9 @@ export default function SideBar() {
             {!collapsed && (
               <span className="sidebar-link-text">Performance</span>
             )}
-          </NavLink>
+          </NavLink> */}
 
-          <NavLink
+          {/* <NavLink
             to="/history"
             title={collapsed ? "Test History" : undefined}
             className={({ isActive }) =>
@@ -106,10 +106,10 @@ export default function SideBar() {
             {!collapsed && (
               <span className="sidebar-link-text">Test History</span>
             )}
-          </NavLink>
+          </NavLink> */}
         </div>
 
-        <div className="sidebar-section">
+        {/* <div className="sidebar-section">
           {!collapsed && <p className="sidebar-section-title">PREFERENCES</p>}
 
           <NavLink
@@ -123,7 +123,7 @@ export default function SideBar() {
 
             {!collapsed && <span className="sidebar-link-text">Settings</span>}
           </NavLink>
-        </div>
+        </div> */}
       </nav>
 
       {/* Footer */}

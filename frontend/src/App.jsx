@@ -1,13 +1,14 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Hero from "./Component/Home/Hero";
 import Home from "./Component/Home/Home";
 
 import QuestionPage from "./Component/Question Page/QuestionPage";
-// import AdaptiveRetestPage from "./Component/Adaptive Retest/AdaptiveRetestPage";
-import ImprovementResult from "./Component/Adaptive Retest/ImprovementResult";
+import ImprovementResult from "./Component/Improvement/ImprovementResult";
 import PerformanceResult from "./Component/Performance/PerformanceResult";
 import AdaptiveRetestPage from "./Component/AdaptiveRetestPage/AdaptiveRetestPage";
+
 import Signin from "./Component/Account/Signin";
 import Signup from "./Component/Account/Signup";
 
@@ -15,43 +16,90 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Hero />} />
-        <Route path="/Home" element={<Home />} />
 
-        
-<Route path="/questions" element={<QuestionPage />} />
-<Route
-  path="/performance/:attemptId"
-  element={<PerformanceResult />}
-/>
+        {/* =================================================
+            HOME
+        ================================================= */}
 
-<Route
-  path="/adaptive-retest/:attemptId"
-  element={<AdaptiveRetestPage />}
-/>
+        <Route
+          path="/"
+          element={<Hero />}
+        />
 
-<Route path="/signin" element={<Signin />} />
-<Route path="/signup" element={<Signup />} />
+        <Route
+          path="/Home"
+          element={<Home />}
+        />
 
-<Route
-  path="/history"
-  // element={<TestHistory />}
-/>
+        {/* =================================================
+            ASSESSMENT
+        ================================================= */}
 
-<Route
-  path="/profile"
-  // element={<Profile />}
-/>
+        <Route
+          path="/questions"
+          element={<QuestionPage />}
+        />
 
-<Route
-  path="/settings"
-  // element={<Settings />}
-/>
+        {/* =================================================
+            PERFORMANCE
+        ================================================= */}
 
-        
-        {/* <Route path="/adaptive-retest" element={<AdaptiveRetestPage />} /> */}
+        <Route
+          path="/performance/:attemptId"
+          element={<PerformanceResult />}
+        />
 
-        <Route path="/improvement-result" element={<ImprovementResult />} />
+        {/* =================================================
+            ADAPTIVE RETEST
+        ================================================= */}
+
+        <Route
+          path="/adaptive-retest/:attemptId"
+          element={<AdaptiveRetestPage />}
+        />
+
+        {/* =================================================
+            IMPROVEMENT RESULT
+        ================================================= */}
+
+        <Route
+          path="/improvement-result"
+          element={<ImprovementResult />}
+        />
+
+        {/* =================================================
+            AUTHENTICATION
+        ================================================= */}
+
+        <Route
+          path="/signin"
+          element={<Signin />}
+        />
+
+        <Route
+          path="/signup"
+          element={<Signup />}
+        />
+
+        {/* =================================================
+            FUTURE PAGES
+        ================================================= */}
+
+        <Route
+          path="/history"
+          // element={<TestHistory />}
+        />
+
+        <Route
+          path="/profile"
+          // element={<Profile />}
+        />
+
+        <Route
+          path="/settings"
+          // element={<Settings />}
+        />
+
       </Routes>
     </BrowserRouter>
   );

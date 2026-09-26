@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
+import api from "../../api/axios";
 
 export default function AdaptiveRetestPage() {
   const location = useLocation();
@@ -156,8 +157,8 @@ useEffect(() => {
       // -----------------------------------------
 
       const submitResponse =
-        await axios.post(
-          "http://localhost:5000/api/attempts/submit",
+        await api.post(
+          "/attempts/submit",
           {
             answers: formattedAnswers,
 
@@ -182,8 +183,8 @@ useEffect(() => {
       // -----------------------------------------
 
       const performanceResponse =
-        await axios.get(
-          `http://localhost:5000/api/performance/${newAttemptId}`
+        await api.get(
+          `performance/${newAttemptId}`
         );
 
       console.log(
@@ -196,8 +197,8 @@ useEffect(() => {
       // -----------------------------------------
 
       const improvementResponse =
-        await axios.get(
-          `http://localhost:5000/api/adaptive-retest/improvement/${retestId}`
+        await api.get(
+          `adaptive-retest/improvement/${retestId}`
         );
 
       console.log(
@@ -266,7 +267,7 @@ useEffect(() => {
 
         <button
           className="btn btn-primary"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/Hpme")}
         >
           Go Home
         </button>

@@ -1,191 +1,5 @@
-// import { useState } from "react";
-// import { useLocation, useNavigate } from "react-router-dom";
-// import axios from "axios";
-
-// import QuestionCard from "./QuestionCard";
-
-// function QuestionPage() {
-//   const location = useLocation();
-//   const navigate = useNavigate();
-
-//   const questions = location.state?.questions || [];
-
-//   const [answers, setAnswers] = useState({});
-//   const [submitting, setSubmitting] = useState(false);
-//   const [error, setError] = useState("");
-//   const [result, setResult] = useState(null);
-
-//   // --------------------------------
-//   // Select an answer
-//   // --------------------------------
-//   const handleAnswerSelect = (questionId, selectedAnswer) => {
-//     setAnswers((previousAnswers) => ({
-//       ...previousAnswers,
-//       [questionId]: selectedAnswer,
-//     }));
-//   };
-
-//   // --------------------------------
-//   // Submit test
-//   // --------------------------------
-//   const handleSubmit = async () => {
-//     setError("");
-
-//     // Check if every question is answered
-//     const unansweredQuestions = questions.filter(
-//       (question) => !answers[question._id]
-//     );
-
-//     if (unansweredQuestions.length > 0) {
-//       setError(
-//         `Please answer all questions. ${unansweredQuestions.length} question(s) remaining.`
-//       );
-//       return;
-//     }
-
-//     try {
-//       setSubmitting(true);
-
-//       // Convert React answers into API format
-//       const formattedAnswers = questions.map((question) => ({
-//         questionId: question._id,
-//         selectedAnswer: answers[question._id],
-//         responseTime: 0,
-//       }));
-
-//       console.log("Submitting answers:", formattedAnswers);
-
-//       const response = await axios.post(
-//         "http://localhost:5000/api/attempts/submit",
-//         {
-//           // Temporary userId for testing
-//           // Later this will come from JWT authentication
-//         //   userId: "YOUR_USER_ID",
-
-//           answers: formattedAnswers,
-//         }
-//       );
-
-//       console.log("Submit response:", response.data);
-
-//       setResult(response.data.result);
-//     } catch (error) {
-//       console.error("Submit test error:", error);
-
-//       const backendMessage = error.response?.data?.message;
-
-//       if (backendMessage) {
-//         setError(backendMessage);
-//       } else if (error.request) {
-//         setError(
-//           "Cannot connect to the server. Make sure the backend is running."
-//         );
-//       } else {
-//         setError(
-//           error.message || "Failed to submit test."
-//         );
-//       }
-//     } finally {
-//       setSubmitting(false);
-//     }
-//   };
-
-//   // --------------------------------
-//   // No questions
-//   // --------------------------------
-//   if (questions.length === 0) {
-//     return (
-//       <div className="container mt-5">
-//         <h2>No questions found</h2>
-
-//         <button
-//           className="btn btn-primary mt-3"
-//           onClick={() => navigate("/")}
-//         >
-//           Generate Questions
-//         </button>
-//       </div>
-//     );
-//   }
-
-//   // --------------------------------
-//   // Result
-//   // --------------------------------
-//   if (result) {
-//     return (
-//       <div className="container mt-5">
-//         <div className="card">
-//           <div className="card-body text-center">
-//             <h2>Test Submitted Successfully 🎉</h2>
-
-//             <h3 className="mt-4">
-//               Score: {result.score} / {result.totalQuestions}
-//             </h3>
-
-//             <h4 className="mt-3">
-//               Percentage: {result.percentage}%
-//             </h4>
-
-//             <button
-//               className="btn btn-primary mt-4"
-//               onClick={() => navigate("/")}
-//             >
-//               Generate Another Test
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   // --------------------------------
-//   // Questions
-//   // --------------------------------
-//   return (
-//     <div className="container mt-4">
-//       <h2 className="mb-4">
-//         Online Assessment
-//       </h2>
-
-//       <p className="text-muted">
-//         Answer all questions and submit your test.
-//       </p>
-
-//       {questions.map((question, index) => (
-//         <QuestionCard
-//           key={question._id || index}
-//           question={question}
-//           index={index}
-//           selectedAnswer={answers[question._id]}
-//           onAnswerSelect={handleAnswerSelect}
-//         />
-//       ))}
-
-//       {error && (
-//         <div className="alert alert-danger mt-3">
-//           {error}
-//         </div>
-//       )}
-
-//       <button
-//         type="button"
-//         className="btn btn-success btn-lg mt-3 mb-5"
-//         onClick={handleSubmit}
-//         disabled={submitting}
-//       >
-//         {submitting
-//           ? "Submitting..."
-//           : "Submit Test"}
-//       </button>
-//     </div>
-//   );
-// }
-
-// export default QuestionPage;
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-// import axios from "axios";
 import api from "../../api/axios";
 
 import QuestionCard from "./QuestionCard";
@@ -194,8 +8,9 @@ function QuestionPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // const questions =
-  //   location.state?.questions || [];
+  // --------------------------------
+  // Assessment data
+  // --------------------------------
 
   const questions = location.state?.questions || [];
 
@@ -203,8 +18,21 @@ function QuestionPage() {
 
   const originalAttemptId = location.state?.originalAttemptId || null;
 
-  // const retestId =
-  //   location.state?.retestId || null;
+  const retestId = location.state?.retestId || null;
+
+  const assessmentId = location.state?.assessmentId || null;
+
+  // --------------------------------
+  // Assessment completion key
+  // --------------------------------
+
+  const assessmentCompletedKey = assessmentId
+    ? `assessment-completed-${assessmentId}`
+    : null;
+
+  // --------------------------------
+  // State
+  // --------------------------------
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -218,63 +46,47 @@ function QuestionPage() {
 
   const [error, setError] = useState("");
 
-  // const [result, setResult] = useState(null);
-  const [attemptId, setAttemptId] = useState(null);
+  // --------------------------------
+  // Detect already completed assessment
+  // --------------------------------
 
-  // --------------------------------
-  // No questions
-  // --------------------------------
-  const handleGenerateRetest = async () => {
-    if (!attemptId) {
-      setError("Original attempt ID is not available.");
+  useEffect(() => {
+    if (!assessmentCompletedKey) {
       return;
     }
 
-    try {
-      setSubmitting(true);
-      setError("");
+    const completed = sessionStorage.getItem(assessmentCompletedKey);
 
-      const response = await api.post(
-        `http://localhost:5000/api/adaptive-retest/generate/${attemptId}`,
-      );
-
-      console.log("Adaptive re-test:", response.data);
-
-      navigate("/adaptive-retest", {
-        state: {
-          questions: response.data.questions,
-
-          attemptType: "adaptive-retest",
-
-          originalAttemptId: response.data.sourceAttemptId,
-
-          retestId: response.data.retestId,
-
-          strategy: response.data.strategy,
-        },
+    if (completed === "true") {
+      navigate("/Home", {
+        replace: true,
       });
-    } catch (error) {
-      console.error("Adaptive re-test generation error:", error);
-
-      const message = error.response?.data?.message;
-
-      setError(message || "Failed to generate adaptive re-test.");
-    } finally {
-      setSubmitting(false);
     }
-  };
+  }, [assessmentCompletedKey, navigate]);
+
+  // --------------------------------
+  // No active assessment
+  // --------------------------------
 
   if (questions.length === 0) {
     return (
       <div className="container mt-5">
-        <h2>No questions found</h2>
+        <h2>No active assessment found</h2>
 
-        <button className="btn btn-primary mt-3" onClick={() => navigate("/")}>
-          Generate Questions
-        </button>
+        <p className="text-muted">
+          This assessment may have already been completed or the assessment
+          session is no longer available.
+        </p>
 
-        <button className="btn btn-warning ms-2" onClick={handleGenerateRetest}>
-          Take Adaptive Re-Test
+        <button
+          className="btn btn-primary mt-3"
+          onClick={() =>
+            navigate("/Home", {
+              replace: true,
+            })
+          }
+        >
+          Create New Assessment
         </button>
       </div>
     );
@@ -298,7 +110,7 @@ function QuestionPage() {
   };
 
   // --------------------------------
-  // Record time
+  // Record question time
   // --------------------------------
 
   const recordCurrentQuestionTime = () => {
@@ -324,7 +136,6 @@ function QuestionPage() {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((previous) => previous + 1);
 
-      // Start timer for the new question
       setQuestionStartTime(() => Date.now());
     }
   };
@@ -339,19 +150,51 @@ function QuestionPage() {
     if (currentIndex > 0) {
       setCurrentIndex((previous) => previous - 1);
 
-      // Start timer for the new question
       setQuestionStartTime(() => Date.now());
     }
   };
 
   // --------------------------------
-  // Submit
+  // Submit assessment
   // --------------------------------
 
   const handleSubmit = async () => {
     setError("");
 
+    // Prevent duplicate clicks
+    if (submitting) {
+      return;
+    }
+
+    if (attemptType === "adaptive-retest") {
+      if (!originalAttemptId) {
+        setError("Original attempt ID is missing for this adaptive re-test.");
+        return;
+      }
+
+      if (!retestId) {
+        setError("Adaptive re-test ID is missing.");
+        return;
+      }
+    }
+
+    // Check whether this assessment was already completed
+    if (assessmentCompletedKey) {
+      const alreadyCompleted = sessionStorage.getItem(assessmentCompletedKey);
+
+      if (alreadyCompleted === "true") {
+        navigate("/Home", {
+          replace: true,
+        });
+
+        return;
+      }
+    }
+
+    // --------------------------------
     // Record final question time
+    // --------------------------------
+
     const finalElapsed = Math.floor((Date.now() - questionStartTime) / 1000);
 
     const finalResponseTimes = {
@@ -376,26 +219,46 @@ function QuestionPage() {
 
       console.log("Submitting answers:", formattedAnswers);
 
-      const response = await api.post(
-        "/attempts/submit",
-        {
-          answers: formattedAnswers,
-          attemptType: attemptType,
-          parentAttemptId:
-            attemptType === "adaptive-retest" ? originalAttemptId : undefined,
-        },
-        
-      );
-      
+      // --------------------------------
+      // Submit attempt
+      // --------------------------------
+
+      const response = await api.post("/attempts/submit", {
+        assessmentId,
+
+        answers: formattedAnswers,
+
+        attemptType: attemptType,
+
+        parentAttemptId:
+          attemptType === "adaptive-retest" ? originalAttemptId : undefined,
+
+        retestId: attemptType === "adaptive-retest" ? retestId : undefined,
+      });
+
+      console.log("Submit response:", response.data);
 
       const newAttemptId = response.data.result.attemptId;
 
-      setAttemptId(newAttemptId);
+      // --------------------------------
+      // Mark this assessment completed
+      // --------------------------------
 
-      // Go to performance result page
+      if (assessmentCompletedKey) {
+        sessionStorage.setItem(assessmentCompletedKey, "true");
+      }
+
+      // --------------------------------
+      // Go to performance
+      // --------------------------------
+
       navigate(`/performance/${newAttemptId}`, {
+        replace: true,
+
         state: {
           attemptId: newAttemptId,
+          attemptType,
+          retestId,
         },
       });
     } catch (error) {
@@ -415,205 +278,71 @@ function QuestionPage() {
     }
   };
 
+  // --------------------------------
+  // Current question UI
+  // --------------------------------
 
-// --------------------------------
-// Assessment UI
-// --------------------------------
+  const selectedAnswer = answers[currentQuestion._id];
 
-const selectedAnswer = answers[currentQuestion._id];
+  const isLastQuestion = currentIndex === questions.length - 1;
 
-const isLastQuestion = currentIndex === questions.length - 1;
+  return (
+    <div className="container mt-4">
+      <h2>Online Assessment</h2>
 
-return (
-  <div className="container mt-4">
-    <h2>Online Assessment</h2>
+      <p className="text-muted">
+        Question {currentIndex + 1} of {questions.length}
+      </p>
 
-    <p className="text-muted">
-      Question {currentIndex + 1} of {questions.length}
-    </p>
+      <div className="progress mb-4">
+        <div
+          className="progress-bar"
+          style={{
+            width: `${((currentIndex + 1) / questions.length) * 100}%`,
+          }}
+        >
+          {currentIndex + 1}/{questions.length}
+        </div>
+      </div>
 
-    <div className="progress mb-4">
-      <div
-        className="progress-bar"
-        style={{
-          width: `${((currentIndex + 1) / questions.length) * 100}%`,
-        }}
-      >
-        {currentIndex + 1}/{questions.length}
+      <QuestionCard
+        question={currentQuestion}
+        index={currentIndex}
+        selectedAnswer={selectedAnswer}
+        onAnswerSelect={handleAnswerSelect}
+      />
+
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      <div className="d-flex justify-content-between mt-4">
+        <button
+          className="btn btn-secondary"
+          onClick={handlePrevious}
+          disabled={currentIndex === 0 || submitting}
+        >
+          Previous
+        </button>
+
+        {!isLastQuestion ? (
+          <button
+            className="btn btn-primary"
+            onClick={handleNext}
+            disabled={submitting}
+          >
+            Next
+          </button>
+        ) : (
+          <button
+            className="btn btn-success"
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Analyzing..." : "Submit Test"}
+          </button>
+        )}
       </div>
     </div>
-
-    <QuestionCard
-      question={currentQuestion}
-      index={currentIndex}
-      selectedAnswer={selectedAnswer}
-      onAnswerSelect={handleAnswerSelect}
-    />
-
-    {error && <div className="alert alert-danger">{error}</div>}
-
-    <div className="d-flex justify-content-between mt-4">
-      <button
-        className="btn btn-secondary"
-        onClick={handlePrevious}
-        disabled={currentIndex === 0 || submitting}
-      >
-        Previous
-      </button>
-
-      {!isLastQuestion ? (
-        <button
-          className="btn btn-primary"
-          onClick={handleNext}
-          disabled={submitting}
-        >
-          Next
-        </button>
-      ) : (
-        <button
-          className="btn btn-success"
-          onClick={handleSubmit}
-          disabled={submitting}
-        >
-          {submitting ? "Analyzing..." : "Submit Test"}
-        </button>
-      )}
-    </div>
-  </div>
-);
+  );
 }
 
 export default QuestionPage;
-
-// --------------------------------
-// Result
-// --------------------------------
-
-// if (result) {
-//   return (
-//     <div className="container mt-5">
-//       <div className="card">
-//         <div className="card-body">
-//           <h2>Performance Analysis</h2>
-
-//           <hr />
-
-//           <h4>
-//             Score: {result.score}/{result.totalQuestions}
-//           </h4>
-
-//           <h4>Accuracy: {result.overallAccuracy}%</h4>
-
-//           <h4>Learning Gap Score: {result.learningGapScore}</h4>
-
-//           <hr />
-
-//           <h5>Weak Areas</h5>
-
-//           {result.weakAreas?.map((area, index) => (
-//             <div key={index} className="alert alert-danger">
-//               <strong>{area.topic}</strong>
-
-//               {area.subtopic && <div>Subtopic: {area.subtopic}</div>}
-
-//               <div>Gap Score: {area.gapScore}</div>
-//             </div>
-//           ))}
-
-//           <h5>Strong Areas</h5>
-
-//           {result.strongAreas?.map((area, index) => (
-//             <div key={index} className="alert alert-success">
-//               {area.topic}
-//               {area.subtopic && ` → ${area.subtopic}`}
-//             </div>
-//           ))}
-
-{
-  /* <button className="btn btn-primary" onClick={() => navigate("/")}>
-              Generate Another Test
-            </button> */
-}
-//       <div className="mt-4">
-//         <button
-//           className="btn btn-warning me-2"
-//           onClick={handleGenerateRetest}
-//           disabled={submitting}
-//         >
-//           {submitting ? "Generating Re-Test..." : "Take Adaptive Re-Test"}
-//         </button>
-
-//         <button className="btn btn-primary" onClick={() => navigate("/")}>
-//           Generate Another Test
-//         </button>
-//       </div>
-//     </div>
-//   </div>
-// </div>
-// );
-
-// --------------------------------
-// Submit attempt
-// --------------------------------
-
-//   const response =
-//     await axios.post(
-//       "http://localhost:5000/api/attempts/submit",
-//       {
-//         answers:
-//           formattedAnswers,
-//            attemptType: "adaptive-retest",
-// // parentAttemptId: originalAttemptId,
-//       }
-
-//     );
-
-//     const response = await axios.post(
-//   "http://localhost:5000/api/attempts/submit",
-//   {
-//     answers: formattedAnswers,
-//     attemptType: "standard",
-//   }
-// );
-
-// const response = await axios.post(
-//   "http://localhost:5000/api/attempts/submit",
-//   {
-//     answers: formattedAnswers,
-//     attemptType: attemptType,
-//     parentAttemptId:
-//       attemptType === "adaptive-retest" ? originalAttemptId : undefined,
-//   },
-// );
-
-// const attemptId =
-//   response.data.result
-//     .attemptId;
-
-// const newAttemptId = response.data.result.attemptId;
-
-// setAttemptId(newAttemptId);
-
-// // --------------------------------
-// // Performance analysis
-// // --------------------------------
-
-// const performanceResponse = await axios.get(
-//   `http://localhost:5000/api/performance/${newAttemptId}`,
-// );
-
-// console.log("Performance:", performanceResponse.data);
-
-// setResult(performanceResponse.data.performance);
-
-// --------------------------------
-// Reset timer when question changes
-// --------------------------------
-
-// useEffect(() => {
-//   setQuestionStartTime(Date.now());
-// }, [currentIndex]);
-
-//   useEffect(() => {
-//   setQuestionStartTime(() => Date.now());
-// }, [currentIndex]);
