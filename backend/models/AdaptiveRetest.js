@@ -30,6 +30,11 @@ const adaptiveRetestSchema =
         required: true,
       },
 
+      targetConcept: {
+        type: String,
+        required: true,
+      },
+
       gapScore: {
         type: Number,
         required: true,

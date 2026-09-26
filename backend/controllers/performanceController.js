@@ -4,40 +4,35 @@ const Attempt = require("../models/Attempt");
 const Question = require("../models/Question");
 const Performance = require("../models/Performance");
 
+const TopicCoverage = require("../models/TopicCoverage");
+
 const {
   analyzePerformance,
 } = require("../services/performanceAnalyzer");
 
-const analyzeAttempt = async (
-  req,
-  res
-) => {
+const {
+  updateConceptEvidence,
+} = require("../services/conceptEvidenceService");
+
+const analyzeAttempt = async (req, res) => {
   try {
-    const { attemptId } =
-      req.params;
+    const { attemptId } = req.params;
 
-    const attempt = await Attempt.findById(attemptId);
+    console.log("PERFORMANCE REQUEST");
+    console.log("attemptId:", attemptId);
+    console.log("req.userId:", req.userId);
 
+    // 1. Validate attempt ID BEFORE querying MongoDB
+    if (!mongoose.Types.ObjectId.isValid(attemptId)) {
+      console.log("Invalid attemptId:", attemptId);
 
-    // --------------------------------
-    // Validate ID
-    // --------------------------------
-
-    if (
-      !mongoose.Types.ObjectId.isValid(
-        attemptId
-      )
-    ) {
       return res.status(400).json({
-        message:
-          "Invalid attemptId",
+        message: "Invalid attemptId",
       });
     }
 
-    // --------------------------------
-    // Find attempt
-    // --------------------------------
-
+    // 2. Find attempt
+    const attempt = await Attempt.findById(attemptId);
 
     if (!attempt) {
       return res.status(404).json({
@@ -45,52 +40,73 @@ const analyzeAttempt = async (
       });
     }
 
-    if (attempt.userId.toString() !== req.userId.toString()) {
+    // 3. Make sure the attempt belongs to logged-in user
+    if (
+      !attempt.userId ||
+      attempt.userId.toString() !==
+      req.userId.toString()
+    ) {
       return res.status(403).json({
-        message: "You are not authorized to view this attempt.",
+        message:
+          "You are not authorized to view this attempt.",
       });
     }
 
-    // --------------------------------
-    // Check existing analysis
-    // --------------------------------
-
+    // 4. Check whether performance was already analyzed
     const existingPerformance =
       await Performance.findOne({
-        attemptId:
-          attempt._id,
+        attemptId: attempt._id,
       });
 
     if (existingPerformance) {
-      return res.status(200).json({
-        message:
-          "Performance already analyzed",
+  const existingQuestions = await Question.find({
+    _id: {
+      $in: attempt.answers.map(
+        (answer) => answer.questionId
+      ),
+    },
+  });
 
-        performance:
-          existingPerformance,
-      });
-    }
+  const existingCoverage =
+    existingQuestions.length > 0
+      ? await TopicCoverage.findOne({
+          userId: req.userId,
+          subject: existingQuestions[0].subject,
+          topic: existingQuestions[0].topic,
+          subtopic: existingQuestions[0].subtopic,
+        })
+      : null;
 
-    // --------------------------------
-    // Question IDs
-    // --------------------------------
+  const existingRemainingConcepts =
+    existingCoverage
+      ? existingCoverage.concepts
+          .filter((concept) => !concept.assessed)
+          .map((concept) => concept.concept)
+      : [];
 
-    const questionIds =
-      attempt.answers.map(
-        (answer) =>
-          answer.questionId
-      );
+  return res.status(200).json({
+    message: "Performance already analyzed",
+    performance: {
+      ...existingPerformance.toObject(),
+      coverageId:
+    existingCoverage?._id || null,
+      remainingConcepts:
+        existingRemainingConcepts,
+    },
+  });
+}
 
-    // --------------------------------
-    // Fetch questions
-    // --------------------------------
+    // 5. Get question IDs
+    const questionIds = attempt.answers.map(
+      (answer) => answer.questionId
+    );
 
-    const questions =
-      await Question.find({
-        _id: {
-          $in: questionIds,
-        },
-      });
+    // 6. Get questions
+    const questions = await Question.find({
+      _id: {
+        $in: questionIds,
+      },
+    });
 
     if (
       questions.length !==
@@ -102,30 +118,42 @@ const analyzeAttempt = async (
       });
     }
 
-    // --------------------------------
-    // Analyze
-    // --------------------------------
+    // Find topic coverage for this assessment
+    const coverage = await TopicCoverage.findOne({
+      userId: req.userId,
+      subject: questions[0].subject,
+      topic: questions[0].topic,
+      subtopic: questions[0].subtopic,
+    });
 
+    const remainingConcepts = coverage
+      ? coverage.concepts
+        .filter((concept) => !concept.assessed)
+        .map((concept) => concept.concept)
+      : [];
+
+    // 7. Analyze performance
     const analysis =
       analyzePerformance(
         attempt,
         questions
       );
 
-    // --------------------------------
-    // Save
-    // --------------------------------
+    console.log(
+      "Performance analysis completed"
+    );
 
-    const performance =
+
+    // 8. Save performance
+    const savedPerformance =
       await Performance.create({
-        attemptId:
-          attempt._id,
+        attemptId: attempt._id,
 
-        userId:
-          attempt.userId,
+        userId: attempt.userId,
 
-        score:
-          analysis.score,
+        subject: questions[0].subject,
+
+        score: analysis.score,
 
         totalQuestions:
           analysis.totalQuestions,
@@ -172,6 +200,9 @@ const analyzeAttempt = async (
         topicPerformance:
           analysis.topicPerformance,
 
+        conceptPerformance:
+          analysis.conceptPerformance,
+
         difficultyPerformance:
           analysis.difficultyPerformance,
 
@@ -181,22 +212,38 @@ const analyzeAttempt = async (
         strongAreas:
           analysis.strongAreas,
 
+        weakConcepts:
+          analysis.weakConcepts,
+
+        strongConcepts:
+          analysis.strongConcepts,
+
         learningGaps:
           analysis.learningGaps,
 
         recommendations:
           analysis.recommendations,
 
-        analysisVersion:
-          "1.0",
+        analysisVersion: "1.0",
       });
 
-    return res.status(201).json({
-      message:
-        "Performance analyzed successfully",
-
-      performance,
+    await updateConceptEvidence({
+      userId: req.userId,
+      performance: savedPerformance,
+      attemptId,
     });
+
+    return res.status(201).json({
+  message:
+    "Performance analyzed successfully",
+
+  performance: {
+    ...savedPerformance.toObject(),
+        coverageId: coverage?._id || null,
+
+    remainingConcepts,
+  },
+});
   } catch (error) {
     console.error(
       "Performance Analysis Error:",

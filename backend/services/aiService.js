@@ -1,97 +1,9 @@
-// const ai = require("../config/gemini");
-
-// const sleep = (ms) => {
-//   return new Promise((resolve) => setTimeout(resolve, ms));
-// };
-
-// const generateQuestionsWithAI = async (prompt, questionJsonSchema) => {
-//   // Primary model + fallback model
-//   const models = [
-//     "gemini-3.6-flash",
-//     "gemini-2.5-flash"
-//   ];
-
-//   try {
-//     for (const model of models) {
-//       console.log(`Trying Gemini model: ${model}`);
-
-//       // Retry up to 3 times
-//       for (let attempt = 1; attempt <= 3; attempt++) {
-//         try {
-//           const response = await ai.models.generateContent({
-//             model: model,
-
-//             contents: prompt,
-
-//             config: {
-//               responseMimeType: "application/json",
-//               responseSchema: questionJsonSchema
-//             }
-//           });
-
-//           if (!response.text) {
-//             throw new Error("Gemini returned an empty response");
-//           }
-
-//           const questions = JSON.parse(response.text);
-
-//           console.log(
-//             `Questions generated successfully using ${model}`
-//           );
-
-//           return questions;
-
-//         } catch (error) {
-//           console.error(
-//             `${model} - Attempt ${attempt} failed:`,
-//             error.message
-//           );
-
-//           // Only retry temporary server errors
-//           if (
-//             error.message.includes("503") ||
-//             error.message.includes("UNAVAILABLE")
-//           ) {
-//             if (attempt < 3) {
-//               const delay = attempt * 3000;
-
-//               console.log(
-//                 `Gemini temporarily unavailable. Retrying in ${
-//                   delay / 1000
-//                 } seconds...`
-//               );
-
-//               await sleep(delay);
-//             }
-//           } else {
-//             // For errors other than 503, don't keep retrying
-//             throw error;
-//           }
-//         }
-//       }
-
-//       console.log(`Switching to fallback model...`);
-//     }
-
-//     throw new Error(
-//       "Gemini models are temporarily unavailable. Please try again later."
-//     );
-
-//   } catch (error) {
-//     console.error("Gemini API error:", error.message);
-
-//     throw new Error("Failed to generate questions using Gemini");
-//   }
-// };
-
-// module.exports = generateQuestionsWithAI;
-
-
 const ai = require("../config/gemini");
 
 const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
 
 const generateQuestionsWithAI = async (
   prompt,
@@ -100,8 +12,9 @@ const generateQuestionsWithAI = async (
 
   const models = [
     "gemini-3.6-flash",
-    "gemini-2.5-flash"
+    "gemini-3.5-flash-lite",
   ];
+
 
   for (const model of models) {
 
@@ -111,15 +24,20 @@ const generateQuestionsWithAI = async (
 
       try {
 
-        const response = await ai.models.generateContent({
-          model,
-          contents: prompt,
+        const response =
+          await ai.models.generateContent({
+            model,
+            contents: prompt,
 
-          config: {
-            responseMimeType: "application/json"
-            // responseSchema: questionJsonSchema
-          }
-        });
+            config: {
+              responseMimeType: "application/json",
+
+              // Enable this after confirming your
+              // current Gemini SDK/config supports it.
+              // responseSchema: questionJsonSchema,
+            },
+          });
+
 
         if (!response.text) {
           throw new Error(
@@ -127,44 +45,73 @@ const generateQuestionsWithAI = async (
           );
         }
 
-        const result = JSON.parse(response.text);
+
+        const result =
+          JSON.parse(response.text);
+
 
         console.log(
           `Questions generated successfully using ${model}`
         );
 
+
         return result;
+
 
       } catch (error) {
 
-        const message = error.message || "";
+        const message =
+          error.message || "";
+
 
         console.error(
           `${model} - Attempt ${attempt} failed:`,
           message
         );
 
-        // 403 - Permission problem
+
+        // ==========================================
+        // 403 - PERMISSION PROBLEM
+        // ==========================================
+
         if (
           message.includes("403") ||
           message.includes("PERMISSION_DENIED")
         ) {
-          throw new Error(
-            "Gemini project access denied. Check your API key and project permissions."
+
+          console.error(
+            `${model} permission denied.`
           );
+
+          // Try next model instead of
+          // killing the complete fallback chain.
+          break;
         }
 
-        // 429 - Quota/rate limit
+
+        // ==========================================
+        // 429 - QUOTA / RATE LIMIT
+        // ==========================================
+
         if (
           message.includes("429") ||
           message.includes("RESOURCE_EXHAUSTED")
         ) {
-          throw new Error(
-            "Gemini API quota exceeded. Please try again later."
+
+          console.error(
+            `${model} quota/rate limit reached.`
           );
+
+          // Do not retry 3 times if the provider
+          // has already told us the quota is exhausted.
+          break;
         }
 
-        // 503 - Temporary Gemini server problem
+
+        // ==========================================
+        // 503 - TEMPORARY SERVER PROBLEM
+        // ==========================================
+
         if (
           message.includes("503") ||
           message.includes("UNAVAILABLE")
@@ -172,31 +119,78 @@ const generateQuestionsWithAI = async (
 
           if (attempt < 3) {
 
-            const delay = attempt * 3000;
+            const delay =
+              attempt * 3000;
 
             console.log(
-              `Retrying in ${delay / 1000} seconds...`
+              `Retrying ${model} in ${
+                delay / 1000
+              } seconds...`
             );
 
             await sleep(delay);
+
+            continue;
           }
 
-          continue;
+          // All retries failed.
+          // Move to next model.
+          break;
         }
 
-        // Other errors
-        throw error;
+
+        // ==========================================
+        // JSON / OTHER TEMPORARY ERRORS
+        // ==========================================
+
+        if (
+          message.includes("JSON") ||
+          message.includes("empty response")
+        ) {
+
+          if (attempt < 3) {
+
+            const delay =
+              attempt * 1000;
+
+            console.log(
+              `Retrying ${model} in ${
+                delay / 1000
+              } seconds...`
+            );
+
+            await sleep(delay);
+
+            continue;
+          }
+
+          break;
+        }
+
+
+        // ==========================================
+        // UNKNOWN ERROR
+        // ==========================================
+
+        console.error(
+          `${model} encountered an unexpected error.`
+        );
+
+        break;
       }
     }
 
+
     console.log(
-      `Switching from ${model} to fallback model...`
+      `Switching from ${model} to fallback Gemini model...`
     );
   }
 
+
   throw new Error(
-    "All Gemini models are temporarily unavailable."
+    "All Gemini models are currently unavailable."
   );
 };
+
 
 module.exports = generateQuestionsWithAI;

@@ -1,106 +1,7 @@
-// const buildAdaptivePrompt = (
-//   strategy
-// ) => {
-//   const {
-//     targetTopic,
-//     targetSubtopic,
-//     gapScore,
-//     currentAccuracy,
-//     selectedDifficulty,
-//     focusAreas,
-//     questionMix,
-//     questionCount,
-//   } = strategy;
-
-//   return `
-// You are an adaptive assessment question generator.
-
-// Generate ${questionCount} multiple-choice questions
-// for a student's adaptive re-test.
-
-// TARGET LEARNING AREA
-// Subject: Computer Science
-// Topic: ${targetTopic}
-// Subtopic: ${targetSubtopic}
-
-// STUDENT PERFORMANCE
-// Learning Gap Score: ${gapScore}
-// Current Accuracy: ${currentAccuracy}%
-
-// ADAPTIVE STRATEGY
-// Primary Difficulty: ${selectedDifficulty}
-
-// Focus Areas:
-// ${focusAreas
-//   .map(
-//     (item) => `- ${item}`
-//   )
-//   .join("\n")}
-
-// QUESTION DIFFICULTY MIX
-// Easy: ${questionMix.easy}
-// Medium: ${questionMix.medium}
-// Hard: ${questionMix.hard}
-
-// IMPORTANT RULES
-
-// 1. Questions must directly target:
-//    ${targetTopic} → ${targetSubtopic}
-
-// 2. Do not generate unrelated questions.
-
-// 3. Questions should test understanding,
-//    not merely memorization.
-
-// 4. Avoid repeating the same question pattern.
-
-// 5. Each question must have exactly 4 options.
-
-// 6. Only one option must be correct.
-
-// 7. correctAnswer must exactly match
-//    one option.
-
-// 8. Include a concise explanation.
-
-// 9. Assign an appropriate Bloom's taxonomy level.
-
-// 10. Respect the requested difficulty mix.
-
-// 11. Return ONLY valid JSON.
-
-// RETURN FORMAT:
-
-// {
-//   "questions": [
-//     {
-//       "subject": "Computer Science",
-//       "topic": "${targetTopic}",
-//       "subtopic": "${targetSubtopic}",
-//       "difficulty": "easy",
-//       "bloomLevel": "Understand",
-//       "question": "Question text",
-//       "options": [
-//         "Option A",
-//         "Option B",
-//         "Option C",
-//         "Option D"
-//       ],
-//       "correctAnswer": "Option A",
-//       "explanation": "Explanation"
-//     }
-//   ]
-// }
-// `;
-
-// };
-
-// module.exports = {
-//   buildAdaptivePrompt,
-// };
-
 const buildAdaptivePrompt = (strategy) => {
   const {
+    subject,
+    targetConcept,
     targetTopic,
     targetSubtopic,
     gapScore,
@@ -114,59 +15,68 @@ const buildAdaptivePrompt = (strategy) => {
   return `
 You are an adaptive assessment question generator.
 
-Generate ${questionCount} multiple-choice questions
+Generate exactly ${questionCount} multiple-choice questions
 for a student's adaptive re-test.
 
 TARGET LEARNING AREA
-Subject: Computer Science
+
+Subject: ${subject}
 Topic: ${targetTopic}
 Subtopic: ${targetSubtopic}
+Concept: ${targetConcept || "Concept reinforcement"}
 
 STUDENT PERFORMANCE
+
 Learning Gap Score: ${gapScore}
 Current Accuracy: ${currentAccuracy}%
 
 ADAPTIVE STRATEGY
+
 Primary Difficulty: ${selectedDifficulty}
 
 Focus Areas:
-${focusAreas
-  .map((item) => `- ${item}`)
-  .join("\n")}
+${focusAreas.map((item) => `- ${item}`).join("\n")}
 
 QUESTION DIFFICULTY MIX
+
 Easy: ${questionMix.easy}
 Medium: ${questionMix.medium}
 Hard: ${questionMix.hard}
 
 IMPORTANT RULES
 
-1. Questions MUST directly target:
-   ${targetTopic} → ${targetSubtopic}
+1. Every question MUST directly test the target concept:
+   "${targetConcept || "the specified learning area"}"
 
-2. Do not generate unrelated questions.
+2. Every question MUST remain within:
+   Topic: "${targetTopic}"
+   Subtopic: "${targetSubtopic}"
 
-3. Questions should test understanding,
-   not merely memorization.
+3. Do not generate questions from unrelated concepts.
 
-4. Avoid repeating the same question pattern.
+4. Questions should test understanding, application,
+   reasoning, or problem solving where appropriate.
 
-5. Each question must have exactly 4 options.
+5. Avoid repeating the same question pattern.
 
-6. Only one option must be correct.
+6. Each question must have exactly 4 options.
 
-7. correctAnswer must exactly match one option.
+7. Only one option must be correct.
 
-8. Include a concise explanation.
+8. correctAnswer must exactly match one of the options.
 
-9. Assign an appropriate Bloom's taxonomy level.
+9. Include a concise explanation.
 
-10. Respect the requested difficulty mix.
+10. Assign a valid Bloom's taxonomy level.
 
-11. Every question MUST contain ALL of these fields:
+11. Respect the requested difficulty distribution.
+
+12. Every question MUST contain ALL of these fields:
+
     subject
     topic
     subtopic
+    concept
     difficulty
     bloomLevel
     question
@@ -174,26 +84,46 @@ IMPORTANT RULES
     correctAnswer
     explanation
 
-12. The topic field MUST be exactly:
+13. The subject field MUST be exactly:
+    "${subject}"
+
+14. The topic field MUST be exactly:
     "${targetTopic}"
 
-13. The subtopic field MUST be exactly:
+15. The subtopic field MUST be exactly:
     "${targetSubtopic}"
 
-14. Return ONLY valid JSON.
-15. Do NOT omit topic or subtopic.
-16. Do NOT add markdown code fences.
+16. The concept field MUST be exactly:
+    "${targetConcept || "Concept reinforcement"}"
+
+17. difficulty MUST be one of:
+    easy
+    medium
+    hard
+
+18. bloomLevel MUST be one of:
+    remember
+    understand
+    apply
+    analyze
+    evaluate
+    create
+
+19. Return ONLY valid JSON.
+
+20. Do NOT add markdown code fences.
 
 RETURN FORMAT:
 
 {
   "questions": [
     {
-      "subject": "Computer Science",
+      "subject": "${subject}",
       "topic": "${targetTopic}",
       "subtopic": "${targetSubtopic}",
+      "concept": "${targetConcept || "Concept reinforcement"}",
       "difficulty": "easy",
-      "bloomLevel": "Understand",
+      "bloomLevel": "understand",
       "question": "Question text",
       "options": [
         "Option A",

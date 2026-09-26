@@ -27,7 +27,10 @@ router.post(
 
 router.get(
   "/improvement/:retestId",
+  protect,
   analyzeRetestImprovement
 );
+
+
 
 module.exports = router;

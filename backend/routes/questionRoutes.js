@@ -1,29 +1,13 @@
-// const express = require("express");
-// const app = express();
-
-// const {
-//   generateQuestionSet
-// } = require("../controllers/questionController");
-
-// const router = express.Router();
-
-// router.post(
-//   "/generate",
-//   generateQuestionSet
-// );
-
-// module.exports = router;
-
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 
 const {
-  generateQuestionSet
+  generateQuestionSet,
+  continueTopicAssessment,
+  generateMoreQuestions,
 } = require("../controllers/questionController");
 
-
 const router = express.Router();
-
 
 const questionGenerationLimiter =
   rateLimit({
@@ -40,12 +24,27 @@ const questionGenerationLimiter =
 
   });
 
+const protect = require("../middleware/authMiddleware");
 
 router.post(
   "/generate",
   questionGenerationLimiter,
+  protect,
   generateQuestionSet
 );
 
+router.post(
+  "/continue",
+  questionGenerationLimiter,
+  protect,
+  continueTopicAssessment
+);
+
+router.post(
+  "/more",
+  questionGenerationLimiter,
+  protect,
+  generateMoreQuestions
+);
 
 module.exports = router;

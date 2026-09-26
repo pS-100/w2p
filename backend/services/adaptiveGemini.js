@@ -1,107 +1,12 @@
-// const ai  = require(
-//   "../config/gemini"
-// );
-
-// const {
-//   buildAdaptivePrompt,
-// } = require(
-//   "./adaptivePrompt"
-// );
-
-// const generateAdaptiveQuestions =
-//   async (strategy) => {
-//     const prompt =
-//       buildAdaptivePrompt(
-//         strategy
-//       );
-
-//     const response =
-//       await ai.models.generateContent(
-//         {
-//           model:
-//             "gemini-3.6-flash",
-
-//           contents: prompt,
-//         }
-//       );
-
-//     let text =
-//       response.text;
-
-//     if (!text) {
-//       throw new Error(
-//         "Gemini returned empty response"
-//       );
-//     }
-
-//     /*
-//       Remove markdown JSON fences
-//       if Gemini returns them.
-//     */
-
-//     text = text
-//       .replace(
-//         /^```json\s*/i,
-//         ""
-//       )
-//       .replace(
-//         /^```\s*/i,
-//         ""
-//       )
-//       .replace(
-//         /\s*```$/i,
-//         ""
-//       )
-//       .trim();
-
-//     let parsed;
-
-//     try {
-//       parsed =
-//         JSON.parse(text);
-//     } catch (error) {
-//       console.error(
-//         "Gemini raw response:",
-//         text
-//       );
-
-//       throw new Error(
-//         "Gemini returned invalid JSON"
-//       );
-//     }
-
-//     if (
-//       !parsed.questions ||
-//       !Array.isArray(
-//         parsed.questions
-//       )
-//     ) {
-//       throw new Error(
-//         "Invalid Gemini question format"
-//       );
-//     }
-
-//     return parsed.questions;
-//   };
-
-// module.exports = {
-//   generateAdaptiveQuestions,
-// };
-
-
-
-const adaptiveQuestionSchema = require(
-  "./adaptiveQuestionSchema"
-);
-
+const adaptiveQuestionSchema = require("./adaptiveQuestionSchema");
 const ai = require("../config/gemini");
-
-const {
-  buildAdaptivePrompt,
-} = require("./adaptivePrompt");
+const { buildAdaptivePrompt } = require("./adaptivePrompt");
+const { getFallbackQuestions } = require("./fallbackQuestionBank");
 
 const sleep = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 };
 
 const generateAdaptiveQuestions = async (strategy) => {
@@ -109,152 +14,213 @@ const generateAdaptiveQuestions = async (strategy) => {
 
   const models = [
     "gemini-3.6-flash",
-    "gemini-2.5-flash",
+    "gemini-3.5-flash-lite",
   ];
 
+  let lastGeminiError = null;
+
+  /*
+    --------------------------------------------------
+    Try Gemini models one by one
+    --------------------------------------------------
+  */
+
   for (const model of models) {
-    console.log(`Trying adaptive Gemini model: ${model}`);
+    console.log(
+      `Trying Gemini adaptive model: ${model}`
+    );
 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: prompt,
+        console.log(
+          `${model} - Attempt ${attempt}`
+        );
 
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: adaptiveQuestionSchema,
-          },
-        });
+        const response =
+          await ai.models.generateContent({
+            model,
+            contents: prompt,
 
+            config: {
+              responseMimeType:
+                "application/json",
+
+              responseSchema:
+                adaptiveQuestionSchema,
+            },
+          });
 
         let text = response.text;
 
         if (!text) {
           throw new Error(
-            "Gemini returned empty response"
+            "Gemini returned an empty response."
           );
         }
 
-        /*
-          Remove markdown JSON fences
-          if Gemini returns them.
-        */
         text = text
-          .replace(/^```json\s*/i, "")
-          .replace(/^```\s*/i, "")
-          .replace(/\s*```$/i, "")
+          .replace(
+            /^```json\s*/i,
+            ""
+          )
+          .replace(
+            /^```\s*/i,
+            ""
+          )
+          .replace(
+            /\s*```$/i,
+            ""
+          )
           .trim();
 
         let parsed;
 
         try {
           parsed = JSON.parse(text);
-        } catch (error) {
-          console.error(
-            "Gemini raw response:",
-            text
-          );
-
+        } catch (jsonError) {
           throw new Error(
-            "Gemini returned invalid JSON"
+            `Invalid JSON returned by Gemini: ${jsonError.message}`
           );
         }
 
         if (
           !parsed.questions ||
-          !Array.isArray(parsed.questions)
+          !Array.isArray(
+            parsed.questions
+          )
         ) {
           throw new Error(
-            "Invalid Gemini question format"
+            "Gemini returned an invalid question format."
           );
         }
 
-        for (const question of parsed.questions) {
+        if (
+          parsed.questions.length === 0
+        ) {
+          throw new Error(
+            "Gemini returned zero questions."
+          );
+        }
+
+        /*
+          Basic required-field validation
+          before returning the result.
+        */
+
+        for (
+          const question
+          of parsed.questions
+        ) {
           if (
+            !question.subject ||
             !question.topic ||
             !question.subtopic ||
+            !question.concept ||
+            !question.difficulty ||
+            !question.bloomLevel ||
             !question.question ||
-            !Array.isArray(question.options) ||
-            !question.correctAnswer
+            !Array.isArray(
+              question.options
+            ) ||
+            question.options.length !== 4 ||
+            !question.correctAnswer ||
+            !question.explanation
           ) {
-            console.error(
-              "Invalid adaptive question:",
-              question
-            );
-
             throw new Error(
-              "Gemini generated a question with missing required fields"
+              "Gemini generated a question with missing or invalid required fields."
             );
           }
         }
 
         console.log(
-          `Adaptive questions generated successfully using ${model}`
+          `${model} adaptive generation successful.`
         );
 
-        return parsed.questions;
+        return {
+          questions:
+            parsed.questions,
 
+          source: "gemini",
+
+          model,
+        };
       } catch (error) {
-        const message = error.message || "";
+        lastGeminiError =
+          error;
 
         console.error(
           `${model} - Attempt ${attempt} failed:`,
-          message
+          error.message
         );
 
-        // 403 - Permission problem
-        if (
-          message.includes("403") ||
-          message.includes("PERMISSION_DENIED")
-        ) {
-          throw new Error(
-            "Gemini project access denied. Check your API key and project permissions."
-          );
+        /*
+          Small delay before retrying
+          the same model.
+        */
+
+        if (attempt < 3) {
+          await sleep(1000);
         }
-
-        // 429 - Quota/rate limit
-        if (
-          message.includes("429") ||
-          message.includes("RESOURCE_EXHAUSTED")
-        ) {
-          throw new Error(
-            "Gemini API quota exceeded. Please try again later."
-          );
-        }
-
-        // 503 - Temporary Gemini server problem
-        if (
-          message.includes("503") ||
-          message.includes("UNAVAILABLE")
-        ) {
-          if (attempt < 3) {
-            const delay = attempt * 3000;
-
-            console.log(
-              `Gemini temporarily unavailable. Retrying in ${delay / 1000
-              } seconds...`
-            );
-
-            await sleep(delay);
-          }
-
-          continue;
-        }
-
-        // Invalid JSON / other errors
-        throw error;
       }
     }
 
     console.log(
-      `Switching adaptive generation from ${model} to fallback model...`
+      `${model} failed after all attempts. Trying next Gemini model...`
     );
   }
 
-  throw new Error(
-    "All Gemini models are temporarily unavailable."
+  /*
+    --------------------------------------------------
+    All Gemini models failed
+    --------------------------------------------------
+  */
+
+  console.log(
+    "All Gemini adaptive models failed."
   );
+
+  console.log(
+    "Switching to local adaptive fallback..."
+  );
+
+  const fallbackQuestions =
+    getFallbackQuestions({
+      targetTopic:
+        strategy.targetTopic,
+
+      targetSubtopic:
+        strategy.targetSubtopic,
+
+      questionCount:
+        strategy.questionCount,
+    });
+
+  if (
+    !Array.isArray(
+      fallbackQuestions
+    ) ||
+    fallbackQuestions.length === 0
+  ) {
+    throw new Error(
+      `Gemini adaptive generation failed and no fallback questions are available for ${strategy.targetTopic} → ${strategy.targetSubtopic}`
+    );
+  }
+
+  console.log(
+    `Using ${fallbackQuestions.length} local fallback questions.`
+  );
+
+  return {
+    questions:
+      fallbackQuestions,
+
+    source: "fallback",
+
+    model: null,
+
+    geminiError:
+      lastGeminiError?.message || null,
+  };
 };
 
 module.exports = {

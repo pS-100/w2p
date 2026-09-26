@@ -63,6 +63,49 @@ const topicPerformanceSchema =
     }
   );
 
+const conceptPerformanceSchema =
+  new mongoose.Schema(
+    {
+      concept: String,
+      topic: String,
+      subtopic: String,
+
+      totalQuestions: Number,
+      attemptedQuestions: Number,
+      skippedQuestions: Number,
+
+      correctAnswers: Number,
+      wrongAnswers: Number,
+
+      accuracy: Number,
+
+      averageResponseTime: Number,
+      medianResponseTime: Number,
+
+      timeEfficiencyScore: Number,
+      consistencyScore: Number,
+
+      difficultyHandlingScore: Number,
+
+      gapScore: Number,
+
+      status: {
+        type: String,
+        enum: [
+          "strong",
+          "average",
+          "weak",
+          "insufficient-data",
+        ],
+      },
+
+      gapReasons: [String],
+    },
+    {
+      _id: false,
+    }
+  );
+
 const difficultyPerformanceSchema =
   new mongoose.Schema(
     {
@@ -101,6 +144,12 @@ const performanceSchema =
         ref: "User",
       },
 
+      subject: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
       score: Number,
 
       totalQuestions: Number,
@@ -131,24 +180,21 @@ const performanceSchema =
 
       confidenceScore: Number,
 
-      topicPerformance: [
-        topicPerformanceSchema,
-      ],
+      topicPerformance: [topicPerformanceSchema],
 
-      difficultyPerformance: [
-        difficultyPerformanceSchema,
-      ],
+      conceptPerformance: [conceptPerformanceSchema],
 
-      weakAreas: [
-        topicPerformanceSchema,
-      ],
+      difficultyPerformance: [difficultyPerformanceSchema],
 
-      strongAreas: [
-        topicPerformanceSchema,
-      ],
+      weakAreas: [topicPerformanceSchema],
+      strongAreas: [topicPerformanceSchema],
+
+      weakConcepts: [conceptPerformanceSchema],
+      strongConcepts: [conceptPerformanceSchema],
 
       learningGaps: [
         {
+          concept: String,
           topic: String,
           subtopic: String,
           gapScore: Number,

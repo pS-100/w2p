@@ -17,15 +17,29 @@ const questionSchema = new mongoose.Schema(
       required: true
     },
 
+     concept: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     difficulty: {
       type: String,
       enum: ["easy", "medium", "hard"],
       required: true
     },
 
-    bloomLevel: {
+     bloomLevel: {
       type: String,
-      required: true
+      enum: [
+        "remember",
+        "understand",
+        "apply",
+        "analyze",
+        "evaluate",
+        "create",
+      ],
+      required: true,
     },
 
     question: {
@@ -33,19 +47,28 @@ const questionSchema = new mongoose.Schema(
       required: true
     },
 
-    options: {
+     options: {
       type: [String],
-      required: true
+      required: true,
+      validate: {
+        validator: function (options) {
+          return options.length === 4;
+        },
+        message: "A question must have exactly 4 options.",
+      },
     },
 
-    correctAnswer: {
+
+     correctAnswer: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     explanation: {
       type: String,
-      required: true
+      required: true,
+      trim: true,
     },
 
     // NEW

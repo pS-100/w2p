@@ -1,51 +1,44 @@
-const round = (
-  value,
-  decimals = 2
-) => {
-  return Number(
-    Number(value).toFixed(decimals)
-  );
+const round = (value, decimals = 2) => {
+  return Number(Number(value || 0).toFixed(decimals));
 };
 
 const selectDifficulty = (area) => {
-  const accuracy =
-    area.accuracy || 0;
+  const accuracy = Number(area.accuracy || 0);
 
-  const easyAccuracy =
-    area.difficultyAccuracy?.easy || 0;
+  const easyAccuracy = Number(
+    area.difficultyAccuracy?.easy || 0
+  );
 
-  const mediumAccuracy =
-    area.difficultyAccuracy?.medium || 0;
+  const mediumAccuracy = Number(
+    area.difficultyAccuracy?.medium || 0
+  );
 
-  const hardAccuracy =
-    area.difficultyAccuracy?.hard || 0;
+  const hardAccuracy = Number(
+    area.difficultyAccuracy?.hard || 0
+  );
 
   /*
-    If fundamentals are weak,
-    start with easy questions.
+    Very weak performance:
+    Start with easier questions so the student
+    can rebuild the concept foundation.
   */
-
-  if (
-    accuracy < 40 ||
-    easyAccuracy < 50
-  ) {
+  if (accuracy < 40 || easyAccuracy < 50) {
     return "easy";
   }
 
   /*
-    If student is moderately weak,
-    use medium questions.
+    Moderate performance:
+    Reinforce the concept at medium difficulty.
   */
-
   if (accuracy < 70) {
     return "medium";
   }
 
   /*
-    If student can handle medium/hard,
-    introduce harder questions.
+    Stronger performance:
+    Move toward harder questions only when
+    medium and hard performance supports it.
   */
-
   if (
     mediumAccuracy >= 70 &&
     hardAccuracy >= 50
@@ -57,65 +50,43 @@ const selectDifficulty = (area) => {
 };
 
 const determineFocus = (area) => {
-  const reasons =
-    area.gapReasons || [];
-
   const focus = [];
 
-  if (
-    area.accuracy < 60
-  ) {
-    focus.push(
-      "concept understanding"
-    );
+  if ((area.accuracy || 0) < 60) {
+    focus.push("concept understanding");
   }
 
-  if (
-    area.fastWrongCount > 0
-  ) {
+  if ((area.fastWrongCount || 0) > 0) {
     focus.push(
       "careful reasoning and avoiding rushed answers"
     );
   }
 
-  if (
-    area.slowWrongCount > 0
-  ) {
+  if ((area.slowWrongCount || 0) > 0) {
     focus.push(
       "conceptual problem solving"
     );
   }
 
-  if (
-    area.slowCorrectCount > 0
-  ) {
+  if ((area.slowCorrectCount || 0) > 0) {
     focus.push(
       "solving efficiency"
     );
   }
 
-  if (
-    area.consistencyScore < 50
-  ) {
+  if ((area.consistencyScore || 0) < 50) {
     focus.push(
       "consistent problem solving"
     );
   }
 
-  if (
-    area.skippedQuestions > 0
-  ) {
+  if ((area.skippedQuestions || 0) > 0) {
     focus.push(
       "confidence and question completion"
     );
   }
 
-  /*
-    If no specific pattern was found,
-    use general conceptual reinforcement.
-  */
-
-  if (!focus.length) {
+  if (focus.length === 0) {
     focus.push(
       "concept reinforcement"
     );
@@ -125,14 +96,8 @@ const determineFocus = (area) => {
 };
 
 const determineQuestionMix = (
-  difficulty,
-  area
+  difficulty
 ) => {
-  /*
-    We deliberately keep the re-test
-    focused on the weak area.
-  */
-
   if (difficulty === "easy") {
     return {
       easy: 4,
@@ -159,43 +124,111 @@ const determineQuestionMix = (
 const buildAdaptiveStrategy = (
   performance
 ) => {
+  if (!performance) {
+    return null;
+  }
+
+  let targetArea = null;
+  let targetType = "concept";
+
+  /*
+    --------------------------------------------------
+    1. Prefer weak concepts
+    --------------------------------------------------
+  */
+
   if (
-    !performance ||
-    !performance.weakAreas ||
-    !performance.weakAreas.length
+    Array.isArray(
+      performance.weakConcepts
+    ) &&
+    performance.weakConcepts.length > 0
   ) {
+    targetArea = [
+      ...performance.weakConcepts,
+    ].sort(
+      (a, b) =>
+        (b.gapScore || 0) -
+        (a.gapScore || 0)
+    )[0];
+  }
+
+  /*
+    --------------------------------------------------
+    2. Fallback to weak topic/subtopic
+    --------------------------------------------------
+  */
+
+  if (!targetArea) {
+    if (
+      Array.isArray(
+        performance.weakAreas
+      ) &&
+      performance.weakAreas.length > 0
+    ) {
+      targetArea = [
+        ...performance.weakAreas,
+      ].sort(
+        (a, b) =>
+          (b.gapScore || 0) -
+          (a.gapScore || 0)
+      )[0];
+
+      targetType = "area";
+    }
+  }
+
+  if (!targetArea) {
     return null;
   }
 
   /*
-    First weak area = highest gap score
-    because Performance Engine already
-    sorts weak areas by gap.
+    --------------------------------------------------
+    3. Select adaptive difficulty
+    --------------------------------------------------
   */
-
-  const targetArea =
-    [...performance.weakAreas].sort(
-      (a, b) =>
-        b.gapScore - a.gapScore
-    )[0];
 
   const difficulty =
     selectDifficulty(
       targetArea
     );
 
+  /*
+    --------------------------------------------------
+    4. Identify learning focus
+    --------------------------------------------------
+  */
+
   const focus =
     determineFocus(
       targetArea
     );
 
+  /*
+    --------------------------------------------------
+    5. Build question distribution
+    --------------------------------------------------
+  */
+
   const questionMix =
     determineQuestionMix(
-      difficulty,
-      targetArea
+      difficulty
     );
 
-  const strategy = {
+  /*
+    --------------------------------------------------
+    6. Return complete strategy
+    --------------------------------------------------
+  */
+
+  return {
+    subject:
+      performance.subject,
+
+    targetType,
+
+    targetConcept:
+      targetArea.concept || null,
+
     targetTopic:
       targetArea.topic,
 
@@ -203,19 +236,29 @@ const buildAdaptiveStrategy = (
       targetArea.subtopic,
 
     gapScore:
-      targetArea.gapScore,
+      round(
+        targetArea.gapScore || 0
+      ),
 
     currentAccuracy:
-      targetArea.accuracy,
+      round(
+        targetArea.accuracy || 0
+      ),
 
     currentDifficultyHandling:
-      targetArea.difficultyHandlingScore,
+      round(
+        targetArea.difficultyHandlingScore || 0
+      ),
 
     currentTimeEfficiency:
-      targetArea.timeEfficiencyScore,
+      round(
+        targetArea.timeEfficiencyScore || 0
+      ),
 
     currentConsistency:
-      targetArea.consistencyScore,
+      round(
+        targetArea.consistencyScore || 0
+      ),
 
     selectedDifficulty:
       difficulty,
@@ -230,8 +273,6 @@ const buildAdaptiveStrategy = (
     reasons:
       targetArea.gapReasons || [],
   };
-
-  return strategy;
 };
 
 module.exports = {

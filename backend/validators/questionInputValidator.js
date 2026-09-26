@@ -1,17 +1,29 @@
 const Joi = require("joi");
 
 const questionInputSchema = Joi.object({
-  subject: Joi.string().trim().required(),
+  subject: Joi.string()
+    .trim()
+    .min(2)
+    .max(100)
+    .required(),
 
-  topic: Joi.string().trim().required(),
+  topic: Joi.string()
+    .trim()
+    .min(2)
+    .max(100)
+    .required(),
 
-  subtopic: Joi.string().trim().required(),
+  subtopic: Joi.string()
+    .trim()
+    .min(2)
+    .max(100)
+    .required(),
 
   difficulty: Joi.string()
     .valid("easy", "medium", "hard")
     .required(),
 
-     bloomLevel: Joi.string()
+  bloomLevel: Joi.string()
     .valid(
       "remember",
       "understand",
@@ -24,9 +36,9 @@ const questionInputSchema = Joi.object({
 
   questionCount: Joi.number()
     .integer()
-    .min(1)
+    .min(10)
     .max(20)
-    .required()
+    .required(),
 });
 
 module.exports = questionInputSchema;

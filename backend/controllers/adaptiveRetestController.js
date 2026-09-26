@@ -21,8 +21,13 @@ const {
 } = require("../services/adaptiveGemini");
 
 const {
-  validateQuestions,
-} = require("../services/questionValidator");
+  validateAdaptiveQuestions,
+} = require("../services/adaptivequestionValidator");
+
+// const {
+//   validateQuestions,
+// } = require("../services/questionValidator");
+
 
 const {
   removeDuplicates,
@@ -63,19 +68,43 @@ const createAdaptiveRetest = async (req, res) => {
     const attempt = await Attempt.findById(attemptId);
 
     if (!attempt) {
-  return res.status(404).json({
-    message: "Attempt not found.",
-  });
-}
+      return res.status(404).json({
+        message: "Attempt not found.",
+      });
+    }
 
-if (
-  attempt.userId.toString() !== req.userId.toString()
-) {
-  return res.status(403).json({
-    message:
-      "You are not authorized to generate a re-test for this attempt.",
-  });
-}
+    if (
+      attempt.userId.toString() !== req.userId.toString()
+    ) {
+      return res.status(403).json({
+        message:
+          "You are not authorized to generate a re-test for this attempt.",
+      });
+    }
+
+    // -----------------------------------------------
+    // 3. Check if adaptive re-test already exists
+    // -----------------------------------------------
+
+    const existingRetest = await AdaptiveRetest.findOne({
+      sourceAttemptId: attempt._id,
+      status: "generated",
+    }).populate("questionIds");
+
+
+
+    if (existingRetest) {
+      console.log("Existing adaptive re-test found.");
+
+      return res.status(200).json({
+        message: "Existing adaptive re-test returned",
+        retestId: existingRetest._id,
+        sourceAttemptId: existingRetest.sourceAttemptId,
+        performanceId: existingRetest.performanceId,
+        strategy: existingRetest.strategy,
+        questions: existingRetest.questionIds,
+      });
+    }
 
 
     /*
@@ -102,17 +131,23 @@ if (
     -----------------------------------------------
     */
 
-    if (
-      !performance.weakAreas ||
-      performance.weakAreas.length === 0
-    ) {
+    const hasWeakConcepts =
+      Array.isArray(performance.weakConcepts) &&
+      performance.weakConcepts.length > 0;
+
+    const hasWeakAreas =
+      Array.isArray(performance.weakAreas) &&
+      performance.weakAreas.length > 0;
+
+    if (!hasWeakConcepts && !hasWeakAreas) {
       return res.status(200).json({
         message:
-          "No significant weak area found. Adaptive re-test is not required.",
-
+          "No significant weak concept or weak area found. Adaptive re-test is not required.",
         performanceId: performance._id,
       });
     }
+
+
 
 
     /*
@@ -144,10 +179,20 @@ if (
     -----------------------------------------------
     */
 
+    // let generatedQuestions =
+    //   await generateAdaptiveQuestions(
+    //     strategy
+    //   );
+
+    const generationResult =
+      await generateAdaptiveQuestions(strategy);
+
     let generatedQuestions =
-      await generateAdaptiveQuestions(
-        strategy
-      );
+      generationResult.questions;
+
+    console.log(
+      `Adaptive questions source: ${generationResult.source}`
+    );
 
     if (
       !Array.isArray(generatedQuestions) ||
@@ -158,6 +203,14 @@ if (
           "Gemini generated no questions",
       });
     }
+
+
+    console.log(
+      "Generated adaptive questions before target validation:",
+      JSON.stringify(generatedQuestions, null, 2)
+    );
+
+    console.log("Adaptive strategy:", strategy);
 
 
     /*
@@ -172,13 +225,10 @@ if (
     }
     */
 
-    const validation = validateQuestions({
-      questions: generatedQuestions,
-    });
-
     generatedQuestions =
-      validation.questions;
-
+  validateAdaptiveQuestions(
+    generatedQuestions
+  );
 
     /*
     -----------------------------------------------
@@ -190,33 +240,71 @@ if (
     */
 
     console.log("Generated Questions:");
-console.dir(generatedQuestions, { depth: null });
+    console.dir(generatedQuestions, { depth: null });
 
-console.log("Adaptive Strategy:");
-console.dir(strategy, { depth: null });
+    console.log("Adaptive Strategy:");
+    console.dir(strategy, { depth: null });
+
+
+
+
+    const targetTopic = String(
+      strategy.targetTopic || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const targetSubtopic = String(
+      strategy.targetSubtopic || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    const targetConcept = String(
+      strategy.targetConcept || ""
+    )
+      .trim()
+      .toLowerCase();
 
     const invalidAdaptiveQuestions =
-      generatedQuestions.filter(
-        (question) =>
-          question.topic  !==
-            strategy.targetTopic
-              .trim()
-              .toLowerCase() ||
-          question.subtopic
-             .trim()
-            .toLowerCase() !==
-            strategy.targetSubtopic
-                .trim()
-              .toLowerCase()
-      );
-      
+      generatedQuestions.filter((question) => {
+        const questionTopic = String(
+          question.topic || ""
+        )
+          .trim()
+          .toLowerCase();
 
-    if (
-      invalidAdaptiveQuestions.length > 0
-    ) {
+        const questionSubtopic = String(
+          question.subtopic || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        const questionConcept = String(
+          question.concept || ""
+        )
+          .trim()
+          .toLowerCase();
+
+        return (
+          !questionTopic ||
+          !questionSubtopic ||
+          !questionConcept ||
+          questionTopic !== targetTopic ||
+          questionSubtopic !== targetSubtopic ||
+          questionConcept !== targetConcept
+        );
+      });
+
+    if (invalidAdaptiveQuestions.length > 0) {
       return res.status(400).json({
         message:
-          "Gemini generated questions outside the target weak area.",
+          "Adaptive questions were generated outside the target weak concept.",
+        target: {
+          topic: strategy.targetTopic,
+          subtopic: strategy.targetSubtopic,
+          concept: strategy.targetConcept,
+        },
       });
     }
 
@@ -292,37 +380,28 @@ console.dir(strategy, { depth: null });
     -----------------------------------------------
     */
 
-    const adaptiveRetest =
-      await AdaptiveRetest.create({
-        sourceAttemptId:
-          attempt._id,
+    const adaptiveRetest = await AdaptiveRetest.create({
+      sourceAttemptId: attempt._id,
+      performanceId: performance._id,
+      userId: attempt.userId,
 
-        performanceId:
-          performance._id,
+      targetTopic: strategy.targetTopic,
+      targetSubtopic: strategy.targetSubtopic,
+      targetConcept: strategy.targetConcept,
 
-        userId:
-          attempt.userId,
+      gapScore: strategy.gapScore,
 
-        targetTopic:
-          strategy.targetTopic,
+      strategy,
 
-        targetSubtopic:
-          strategy.targetSubtopic,
+      questionIds:
+        savedQuestions.map(
+          (question) =>
+            question._id
+        ),
 
-        gapScore:
-          strategy.gapScore,
-
-        strategy,
-
-        questionIds:
-          savedQuestions.map(
-            (question) =>
-              question._id
-          ),
-
-        status:
-          "generated",
-      });
+      status:
+        "generated",
+    });
 
 
     /*
@@ -365,7 +444,7 @@ console.dir(strategy, { depth: null });
     });
   }
 
-  
+
 
 };
 
@@ -434,11 +513,11 @@ const analyzeRetestImprovement =
         });
       }
 
-      const improvement =
-        analyzeImprovement(
-          before,
-          after
-        );
+      const improvement = analyzeImprovement(
+        before,
+        after,
+        retest.strategy
+      );
 
       await AdaptiveRetest.findByIdAndUpdate(
         retestId,
